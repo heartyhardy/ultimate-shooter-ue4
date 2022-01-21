@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"name": "UltimateShooter",
+			"path": "."
+		},
+		{
+			"name": "UE4",
+			"path": "C:\\Program Files\\Epic Games\\UE_4.27"
+		}
+	],
+	"settings": {
+		"typescript.tsc.autoDetect": "off",
+		"C_Cpp.default.forcedInclude": [
+			"${default}",
+			"C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\Intermediate\\Build\\Win64\\UE4Editor\\Development\\UltimateShooter\\Definitions.UltimateShooter.h",
+			"C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\Intermediate\\Build\\Win64\\UltimateShooterEditor\\Development\\Engine\\SharedPCH.Engine.ShadowErrors.h"
+		]
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-vscode.cpptools",
+			"ms-dotnettools.csharp"
+		]
+	}
+}

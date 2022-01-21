@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "UltimateShooterEditor Editor Win64 Development (UltimateShooter)",
+            "intelliSenseMode": "msvc-x64",
+            "compileCommands": "C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\.vscode\\compileCommands_UltimateShooter.json",
+            "cStandard": "c17",
+            "cppStandard": "c++17"
+        },
+        {
+            "name": "Win32",
+            "intelliSenseMode": "msvc-x64",
+            "compileCommands": "C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\.vscode\\compileCommands_Default.json",
+            "cStandard": "c17",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}

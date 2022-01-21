@@ -1,0 +1,123 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "UltimateShooter (Debug)",
+            "request": "launch",
+            "preLaunchTask": "UltimateShooter Win64 Debug Build",
+            "program": "C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\Binaries\\Win64\\UE4-Win64-Debug.exe",
+            "args": [],
+            "cwd": "C:\\Program Files\\Epic Games\\UE_4.27",
+            "stopAtEntry": false,
+            "type": "cppvsdbg",
+            "visualizerFile": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Extras\\VisualStudioDebugging\\UE4.natvis",
+            "console": "newExternalWindow"
+        },
+        {
+            "name": "UltimateShooter (DebugGame)",
+            "request": "launch",
+            "preLaunchTask": "UltimateShooter Win64 DebugGame Build",
+            "program": "C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\Binaries\\Win64\\UE4-Win64-DebugGame.exe",
+            "args": [],
+            "cwd": "C:\\Program Files\\Epic Games\\UE_4.27",
+            "stopAtEntry": false,
+            "type": "cppvsdbg",
+            "visualizerFile": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Extras\\VisualStudioDebugging\\UE4.natvis",
+            "console": "newExternalWindow"
+        },
+        {
+            "name": "UltimateShooter (Development)",
+            "request": "launch",
+            "preLaunchTask": "UltimateShooter Win64 Development Build",
+            "program": "C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\Binaries\\Win64\\UE4.exe",
+            "args": [],
+            "cwd": "C:\\Program Files\\Epic Games\\UE_4.27",
+            "stopAtEntry": false,
+            "type": "cppvsdbg",
+            "visualizerFile": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Extras\\VisualStudioDebugging\\UE4.natvis",
+            "console": "newExternalWindow"
+        },
+        {
+            "name": "UltimateShooter (Shipping)",
+            "request": "launch",
+            "preLaunchTask": "UltimateShooter Win64 Shipping Build",
+            "program": "C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\Binaries\\Win64\\UE4-Win64-Shipping.exe",
+            "args": [],
+            "cwd": "C:\\Program Files\\Epic Games\\UE_4.27",
+            "stopAtEntry": false,
+            "type": "cppvsdbg",
+            "visualizerFile": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Extras\\VisualStudioDebugging\\UE4.natvis",
+            "console": "newExternalWindow"
+        },
+        {
+            "name": "UltimateShooter (Test)",
+            "request": "launch",
+            "preLaunchTask": "UltimateShooter Win64 Test Build",
+            "program": "C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\Binaries\\Win64\\UE4-Win64-Test.exe",
+            "args": [],
+            "cwd": "C:\\Program Files\\Epic Games\\UE_4.27",
+            "stopAtEntry": false,
+            "type": "cppvsdbg",
+            "visualizerFile": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Extras\\VisualStudioDebugging\\UE4.natvis",
+            "console": "newExternalWindow"
+        },
+        {
+            "name": "UltimateShooterEditor (Debug)",
+            "request": "launch",
+            "preLaunchTask": "UltimateShooterEditor Win64 Debug Build",
+            "program": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\Win64\\UE4Editor-Win64-Debug.exe",
+            "args": [
+                "C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\UltimateShooter.uproject"
+            ],
+            "cwd": "C:\\Program Files\\Epic Games\\UE_4.27",
+            "stopAtEntry": false,
+            "type": "cppvsdbg",
+            "visualizerFile": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Extras\\VisualStudioDebugging\\UE4.natvis",
+            "console": "newExternalWindow"
+        },
+        {
+            "name": "UltimateShooterEditor (DebugGame)",
+            "request": "launch",
+            "preLaunchTask": "UltimateShooterEditor Win64 DebugGame Build",
+            "program": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\Win64\\UE4Editor-Win64-DebugGame.exe",
+            "args": [
+                "C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\UltimateShooter.uproject"
+            ],
+            "cwd": "C:\\Program Files\\Epic Games\\UE_4.27",
+            "stopAtEntry": false,
+            "type": "cppvsdbg",
+            "visualizerFile": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Extras\\VisualStudioDebugging\\UE4.natvis",
+            "console": "newExternalWindow"
+        },
+        {
+            "name": "UltimateShooterEditor (Development)",
+            "request": "launch",
+            "preLaunchTask": "UltimateShooterEditor Win64 Development Build",
+            "program": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\Win64\\UE4Editor.exe",
+            "args": [
+                "C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\UltimateShooter.uproject"
+            ],
+            "cwd": "C:\\Program Files\\Epic Games\\UE_4.27",
+            "stopAtEntry": false,
+            "type": "cppvsdbg",
+            "visualizerFile": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Extras\\VisualStudioDebugging\\UE4.natvis",
+            "console": "newExternalWindow"
+        },
+        {
+            "name": "Generate Project Files",
+            "type": "clr",
+            "request": "launch",
+            "program": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Binaries\\DotNET\\UnrealBuildTool.exe",
+            "console": "externalTerminal",
+            "args": [
+                "-projectfiles",
+                "-vscode",
+                "-project=C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\UltimateShooter.uproject",
+                "-game",
+                "-engine"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "cwd": "C:\\Program Files\\Epic Games\\UE_4.27"
+        }
+    ]
+}

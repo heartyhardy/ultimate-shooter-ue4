@@ -1,0 +1,37 @@
+[
+    {
+        "file": "C:\\\\Users\\\\chari\\\\Documents\\\\Unreal Projects\\\\Advanced Shooter\\\\UltimateShooter\\\\Source\\\\UltimateShooter\\\\UltimateShooter.Build.cs",
+        "command": "cl.exe @\"C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\.vscode\\compileCommands_UltimateShooter\\UltimateShooter.210.rsp\"",
+        "directory": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Source"
+    },
+    {
+        "file": "C:\\\\Users\\\\chari\\\\Documents\\\\Unreal Projects\\\\Advanced Shooter\\\\UltimateShooter\\\\Source\\\\UltimateShooter\\\\UltimateShooter.cpp",
+        "command": "cl.exe @\"C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\.vscode\\compileCommands_UltimateShooter\\UltimateShooter.210.rsp\"",
+        "directory": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Source"
+    },
+    {
+        "file": "C:\\\\Users\\\\chari\\\\Documents\\\\Unreal Projects\\\\Advanced Shooter\\\\UltimateShooter\\\\Source\\\\UltimateShooter\\\\UltimateShooter.h",
+        "command": "cl.exe @\"C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\.vscode\\compileCommands_UltimateShooter\\UltimateShooter.210.rsp\"",
+        "directory": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Source"
+    },
+    {
+        "file": "C:\\\\Users\\\\chari\\\\Documents\\\\Unreal Projects\\\\Advanced Shooter\\\\UltimateShooter\\\\Source\\\\UltimateShooter\\\\UltimateShooterGameModeBase.cpp",
+        "command": "cl.exe @\"C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\.vscode\\compileCommands_UltimateShooter\\UltimateShooter.210.rsp\"",
+        "directory": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Source"
+    },
+    {
+        "file": "C:\\\\Users\\\\chari\\\\Documents\\\\Unreal Projects\\\\Advanced Shooter\\\\UltimateShooter\\\\Source\\\\UltimateShooter\\\\UltimateShooterGameModeBase.h",
+        "command": "cl.exe @\"C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\.vscode\\compileCommands_UltimateShooter\\UltimateShooter.210.rsp\"",
+        "directory": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Source"
+    },
+    {
+        "file": "c:\\\\Users\\\\chari\\\\Documents\\\\Unreal Projects\\\\Advanced Shooter\\\\UltimateShooter\\\\Source\\\\UltimateShooter\\\\ShooterCharacter.h",
+        "command": "cl.exe @\"C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\.vscode\\compileCommands_UltimateShooter\\UltimateShooter.210.rsp\"",
+        "directory": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Source"
+    },
+    {
+        "file": "c:\\\\Users\\\\chari\\\\Documents\\\\Unreal Projects\\\\Advanced Shooter\\\\UltimateShooter\\\\Source\\\\UltimateShooter\\\\ShooterCharacter.cpp",
+        "command": "cl.exe @\"C:\\Users\\chari\\Documents\\Unreal Projects\\Advanced Shooter\\UltimateShooter\\.vscode\\compileCommands_UltimateShooter\\UltimateShooter.210.rsp\"",
+        "directory": "C:\\Program Files\\Epic Games\\UE_4.27\\Engine\\Source"
+    }
+]

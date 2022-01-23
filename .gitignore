@@ -75,3 +75,6 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Paragon Assets
+Content/ParagonLtBelica/*

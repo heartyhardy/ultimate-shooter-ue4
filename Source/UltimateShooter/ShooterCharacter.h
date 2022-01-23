@@ -37,6 +37,9 @@ protected:
 	*/
 	void LookUpAtRate(float Rate);
 
+	/** Called when Fire Button is pressed */
+	void FireWeapon();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

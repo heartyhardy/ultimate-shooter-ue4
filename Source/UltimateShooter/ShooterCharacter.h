@@ -65,6 +65,14 @@ private:
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float BaseLookupRate;
 
+	/** Randomized Sound cue reference for weapon fire. Using editanywhere and blueprintreadwrite to set it in the blueprint */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class USoundCue* FireSound;
+
+	/** Gun Muzzle Flash particle system. Attached to: BarrelSocket */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class UParticleSystem* MuzzleFlash;
+
 public:
 
 	/** Returns Camera boom subobject **/

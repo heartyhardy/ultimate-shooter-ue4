@@ -113,6 +113,14 @@ void AShooterCharacter::FireWeapon()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
 	}
 
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && FireFromHipMontage)
+	{
+		AnimInstance->Montage_Play(FireFromHipMontage);
+		AnimInstance->Montage_JumpToSection(FName("StartFireFromHip"));
+	}
+
 }
 
 // Called every frame

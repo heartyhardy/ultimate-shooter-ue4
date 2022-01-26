@@ -8,8 +8,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "DrawDebugHelpers.h"
 
 
 // Sets default values
@@ -111,6 +113,39 @@ void AShooterCharacter::FireWeapon()
 		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
 
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
+
+		/** Perform a Line Trace from Gun BarrelSocket's Transform */
+		FHitResult Hit;
+		const FVector HitStart{ SocketTransform.GetLocation() };
+		const FQuat HitRotation{ SocketTransform.GetRotation() };
+		const FVector HitRotationAxis{ HitRotation.GetAxisX() };
+		const FVector HitEnd{ HitStart + HitRotationAxis * 50'000.0f };
+
+		FVector SmokeBeamEnd{ HitEnd };
+
+		GetWorld()->LineTraceSingleByChannel(Hit, HitStart, HitEnd, ECollisionChannel::ECC_Visibility);
+
+		if (Hit.bBlockingHit) // If bullet hits anything
+		{
+			//DrawDebugLine(GetWorld(), HitStart, HitEnd, FColor::Red, false, 5.0f);
+			//DrawDebugPoint(GetWorld(), Hit.Location, 15.0f, FColor::Green, false, 2.0f);
+
+			SmokeBeamEnd = Hit.Location;
+
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, Hit.Location);
+			}
+		}
+
+		if (SmokeBeam)
+		{
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SmokeBeam, SocketTransform);
+			if (Beam)
+			{
+				Beam->SetVectorParameter(FName("Target"), SmokeBeamEnd);
+			}
+		}
 	}
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();

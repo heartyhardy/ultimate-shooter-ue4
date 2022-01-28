@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "ShooterCharacter.generated.h"
 
+
 UCLASS()
 class ULTIMATESHOOTER_API AShooterCharacter : public ACharacter
 {
@@ -36,6 +37,9 @@ protected:
 	* @param Rate This is a normalized rate. i.e. 1.0 means 100% of the desired look up/down rate.
 	*/
 	void LookUpAtRate(float Rate);
+
+	/** Beam End Location depending on the Gun socket or Crosshairs */
+	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& BeamEndLocation);
 
 	/** Called when Fire Button is pressed */
 	void FireWeapon();

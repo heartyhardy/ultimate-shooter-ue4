@@ -57,6 +57,15 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		*/
 		MovementOffsetYaw = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation).Yaw;
 
+		/** Save the MovmentOffsetYaw while Character's velocity > 0.f
+		* This is required for Ground Locomotion - JogStop Blendspace...
+		* as it can't determine MovementOffsetYaw when Character stops(Velocity = 0 therefore can't get the movment offset)
+		*/
+		if (ShooterCharacter->GetVelocity().Size() > 0.f)
+		{
+			LastMovementOffsetYaw = MovementOffsetYaw;
+		}
+
 		/** FOR DEBUG PURPOSES ONLY
 		
 		FString RotationMessage = FString::Printf(TEXT("Base Aim Rotation: %f"), AimRotation.Yaw);

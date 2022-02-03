@@ -66,6 +66,9 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 			LastMovementOffsetYaw = MovementOffsetYaw;
 		}
 
+		/** Is the Character aiming their weapon? Needs this in Animation Blueprint */
+		bAiming = ShooterCharacter->IsAiming();
+
 		/** FOR DEBUG PURPOSES ONLY
 		
 		FString RotationMessage = FString::Printf(TEXT("Base Aim Rotation: %f"), AimRotation.Yaw);

@@ -68,6 +68,9 @@ protected:
 	/** Setup Base Turn/LookUp Rates when Aiming ON/OFF */
 	void SetupTurnRate();
 
+	/** Calculate Crosshair size */
+	void CalculateCrosshairSpread(float DeltaTime);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -135,6 +138,22 @@ private:
 	/** Determine the speed of camera zoom in and out */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float CameraInterpSpeed;
+	
+	/** Dynamic Crosshair Size Factor */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float CrosshairSpreadMultiplier;
+
+	/** Velocity component for the crosshair spread */
+	float CrosshairVelocityFactor;
+
+	/** In air component for the crosshair spread */
+	float CrosshairInAirFactor;
+
+	/** Aiming factor for the crosshair spread */
+	float CrosshairAimingFactor;
+
+	/** Firing factor for the crosshair spread */
+	float CrosshairFiringFactor;
 
 	/** Randomized Sound cue reference for weapon fire. Using editanywhere and blueprintreadwrite to set it in the blueprint */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -164,6 +183,10 @@ public:
 	/** Returns Camera subobject **/
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	//Exposes Aiming state to AimInstance
+	/** Exposes Aiming state to AimInstance */
 	FORCEINLINE bool IsAiming() const { return bAiming; };
+
+	/** Exposes CrosshairSpreadMultiplier to Blueprints */
+	UFUNCTION(BlueprintCallable)
+	float GetCrosshairSpreadMultiplier() const;
 };

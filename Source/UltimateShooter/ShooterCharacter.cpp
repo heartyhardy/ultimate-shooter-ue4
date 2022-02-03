@@ -33,7 +33,7 @@ AShooterCharacter::AShooterCharacter() :
 	DefaultCameraFOV(0.f), // Will be changed in constructor
 	ZoomedCameraFOV(35.f),
 	CurrentCameraFOV(0.f),
-	CameraInterpSpeed(30.f)
+	CameraInterpSpeed(20.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -324,6 +324,23 @@ void AShooterCharacter::SetupTurnRate()
 	}
 }
 
+void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
+{
+
+	FVector2D WalkSpeedRange { 0.f, 600.f };
+	FVector2D VelocityMultiplierRange{ 0.f, 1.f };
+	FVector Velocity{ GetVelocity() };
+	Velocity.Z = 0.f; // We just need the lateral component of the velocity
+
+	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(
+		WalkSpeedRange,
+		VelocityMultiplierRange,
+		GetVelocity().Size()
+	);
+
+	CrosshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor;
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -334,6 +351,9 @@ void AShooterCharacter::Tick(float DeltaTime)
 
 	/** Setup Turn Rates */
 	SetupTurnRate();
+
+	/** Calculate Crosshair Spread per frame */
+	CalculateCrosshairSpread(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -367,5 +387,10 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	/** Bind Aim ON/OFF to Input */
 	PlayerInputComponent->BindAction("AimWeapon", EInputEvent::IE_Pressed, this, &AShooterCharacter::StartAiming);
 	PlayerInputComponent->BindAction("AimWeapon", EInputEvent::IE_Released, this, &AShooterCharacter::StopAiming);
+}
+
+float AShooterCharacter::GetCrosshairSpreadMultiplier() const
+{
+	return CrosshairSpreadMultiplier;
 }
 

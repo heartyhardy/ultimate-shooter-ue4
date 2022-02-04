@@ -33,7 +33,16 @@ AShooterCharacter::AShooterCharacter() :
 	DefaultCameraFOV(0.f), // Will be changed in constructor
 	ZoomedCameraFOV(35.f),
 	CurrentCameraFOV(0.f),
-	CameraInterpSpeed(20.f)
+	CameraInterpSpeed(20.f),
+	// Crosshair Spread
+	CrosshairSpreadMultiplier(0.f),
+	CrosshairVelocityFactor(0.f),
+	CrosshairInAirFactor(0.f),
+	CrosshairAimingFactor(0.f),
+	CrosshairFiringFactor(0.f),
+	// Crosshair spread when shooting
+	ShootTimeDuration(0.1f),
+	bFiring(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -157,7 +166,7 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, 
 
 	/** Get Screen Location of the Crosshair */
 	FVector2D CrosshairLocation{ ViewportSize.X / 2.f, ViewportSize.Y / 2.f };
-	CrosshairLocation.Y -= 50.f;
+	//CrosshairLocation.Y -= 50.f; // No need of this anymore because crosshair needs to be consistent in hipfire and aim modes
 
 	FVector CrosshairWorldPosition;
 	FVector CrosshairWorldDirection;
@@ -270,6 +279,8 @@ void AShooterCharacter::FireWeapon()
 		AnimInstance->Montage_JumpToSection(FName("StartFireFromHip"));
 	}
 
+	/** Start Timer for crosshair spread factor when firing */
+	StartCrosshairFireTimer();
 }
 
 /** Set Aiming ON/OFF */
@@ -338,7 +349,90 @@ void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
 		GetVelocity().Size()
 	);
 
-	CrosshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor;
+	/** Spread the crosshair while in air */
+	if (GetCharacterMovement()->IsFalling())
+	{
+		CrosshairInAirFactor = FMath::FInterpTo(
+			CrosshairInAirFactor,
+			2.25f,
+			DeltaTime,
+			2.25f
+		);
+	}
+	else
+	{
+		CrosshairInAirFactor = FMath::FInterpTo(
+			CrosshairInAirFactor,
+			0.f,
+			DeltaTime,
+			30.f
+		);
+	}
+
+	/** Decrease crosshair spread while aiming */
+
+	if (bAiming)
+	{
+		CrosshairAimingFactor = FMath::FInterpTo(
+			CrosshairAimingFactor,
+			0.5f,
+			DeltaTime,
+			2.25f
+		);
+	}
+	else
+	{
+		CrosshairAimingFactor = FMath::FInterpTo(
+			CrosshairAimingFactor,
+			0.f,
+			DeltaTime,
+			30.f
+		);
+	}
+
+	/** Spread Crosshair while shooting */
+
+	if (bFiring)
+	{
+		CrosshairFiringFactor = FMath::FInterpTo(
+			CrosshairFiringFactor,
+			0.5f,
+			DeltaTime,
+			20.f
+		);
+	}
+	else
+	{
+		CrosshairFiringFactor = FMath::FInterpTo(
+			CrosshairFiringFactor,
+			0.f,
+			DeltaTime,
+			20.f
+		);
+	}
+
+	CrosshairSpreadMultiplier = 
+		0.5f + 
+		CrosshairVelocityFactor +
+		CrosshairInAirFactor - // Substract when aiming to reduce the crosshair spread 
+		CrosshairAimingFactor +
+		CrosshairFiringFactor;
+}
+
+void AShooterCharacter::StartCrosshairFireTimer()
+{
+	bFiring = true;
+	GetWorldTimerManager().SetTimer(
+		CrosshairShootTimerHandle,
+		this,
+		&AShooterCharacter::StopCrosshairFireTimer,
+		ShootTimeDuration
+	);
+}
+
+void AShooterCharacter::StopCrosshairFireTimer()
+{
+	bFiring = false;
 }
 
 // Called every frame

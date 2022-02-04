@@ -71,6 +71,12 @@ protected:
 	/** Calculate Crosshair size */
 	void CalculateCrosshairSpread(float DeltaTime);
 
+	/** Start Stop Crosshair spread when firing the weapon */
+	UFUNCTION()
+	void StartCrosshairFireTimer();
+	UFUNCTION()
+	void StopCrosshairFireTimer();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -174,6 +180,11 @@ private:
 	/** Bullet Smoke Trail Beam particle system */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* SmokeBeam;
+
+	/** Determine crosshair spread when firing */
+	bool bFiring;
+	float ShootTimeDuration;
+	FTimerHandle CrosshairShootTimerHandle;
 
 public:
 

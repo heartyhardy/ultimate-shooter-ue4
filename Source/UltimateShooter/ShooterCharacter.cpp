@@ -42,7 +42,11 @@ AShooterCharacter::AShooterCharacter() :
 	CrosshairFiringFactor(0.f),
 	// Crosshair spread when shooting
 	ShootTimeDuration(0.1f),
-	bFiring(false)
+	bFiring(false),
+	// Auto Fire
+	bShouldAutoFire(true),
+	bAutoFireButtonPressed(false),
+	AutomaticFireRate(0.1f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -69,7 +73,7 @@ AShooterCharacter::AShooterCharacter() :
 	GetCharacterMovement()->RotationRate = FRotator{ 0.f, 540.f, 0.f }; // ... at this Rotation Rate
 
 	/** Configure Character Jump */
-	GetCharacterMovement()->JumpZVelocity = 600.f;
+	GetCharacterMovement()->JumpZVelocity = 350.f;
 	GetCharacterMovement()->AirControl = 0.2f; // How much responsive Character is while Airborne
 }
 
@@ -435,6 +439,42 @@ void AShooterCharacter::StopCrosshairFireTimer()
 	bFiring = false;
 }
 
+void AShooterCharacter::AutoFirePressed()
+{
+	bAutoFireButtonPressed = true;
+	StartAutoFire();
+}
+
+void AShooterCharacter::AutoFireReleased()
+{
+	bAutoFireButtonPressed = false;
+}
+
+void AShooterCharacter::StartAutoFire()
+{
+	if (bShouldAutoFire)
+	{
+		FireWeapon();
+		bShouldAutoFire = false;
+		GetWorldTimerManager().SetTimer(
+			AutoFireTimerHandle,
+			this,
+			&AShooterCharacter::ResetAutoFire,
+			AutomaticFireRate
+		);
+	}
+}
+
+void AShooterCharacter::ResetAutoFire()
+{
+	bShouldAutoFire = true;
+	/** If Auto Fire button is still pressed, restart the firing sequence */
+	if (bAutoFireButtonPressed)
+	{
+		StartAutoFire();
+	}
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -476,7 +516,8 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Released, this, &ACharacter::StopJumping);
 
 	/** Binds Weapon Primary Fire Input */
-	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Pressed, this, &AShooterCharacter::FireWeapon);
+	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Pressed, this, &AShooterCharacter::AutoFirePressed);
+	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Released, this, &AShooterCharacter::AutoFireReleased);
 
 	/** Bind Aim ON/OFF to Input */
 	PlayerInputComponent->BindAction("AimWeapon", EInputEvent::IE_Pressed, this, &AShooterCharacter::StartAiming);

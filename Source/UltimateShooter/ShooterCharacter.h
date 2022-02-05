@@ -77,6 +77,16 @@ protected:
 	UFUNCTION()
 	void StopCrosshairFireTimer();
 
+	/** Registers Auto fire input with PlayerInputController */
+	void AutoFirePressed();
+	void AutoFireReleased();
+
+	/** Starts firing if bShould fire is true, also starts the auto-fire cooldown timer */
+	void StartAutoFire();
+
+	UFUNCTION()
+	void ResetAutoFire();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -185,6 +195,18 @@ private:
 	bool bFiring;
 	float ShootTimeDuration;
 	FTimerHandle CrosshairShootTimerHandle;
+
+	/** LMB or Right Console Trigger Pressed*/
+	bool bAutoFireButtonPressed;
+	
+	/** Fire cooldown, waiting for timer tick */
+	bool bShouldAutoFire;
+
+	/** Rate of Auto-Fire */
+	float AutomaticFireRate;
+
+	/** Timer handle for automatic fire cooldown */
+	FTimerHandle AutoFireTimerHandle;
 
 public:
 

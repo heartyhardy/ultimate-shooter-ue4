@@ -78,3 +78,16 @@ DerivedDataCache/*
 
 # Paragon Assets
 Content/ParagonLtBelica/*
+
+#Other Assets
+Content/Audio/*
+Content/Blueprints/*
+Content/Collections/*
+Content/Developers/*
+Content/Fx/*
+Content/Maps/*
+Content/Materials/*
+Content/Meshes/*
+Content/Sequences/*
+Content/StarterContent/*
+Content/Textures/*

@@ -87,6 +87,12 @@ protected:
 	UFUNCTION()
 	void ResetAutoFire();
 
+	/** Line trace for Item under crosshairs  */
+	bool TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation);
+
+	/** Trace for items if overlappedItemCount > 0 */
+	void TraceForItems();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -208,6 +214,16 @@ private:
 	/** Timer handle for automatic fire cooldown */
 	FTimerHandle AutoFireTimerHandle;
 
+	/** True if Item Line Tracing to be run every frame */
+	bool bShouldTraceForItems;
+
+	/** No of overlapped items when tracing for items */
+	int8 OverlappedItemCount;
+
+	/** Item that was traced last frame. When trace doesnt hit, we can hide it using this */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item, meta =  (AllowPrivateAccess = "true"))
+	class AItem* TraceHitItemLastFrame;
+
 public:
 
 	/** Returns Camera boom subobject **/
@@ -218,6 +234,12 @@ public:
 
 	/** Exposes Aiming state to AimInstance */
 	FORCEINLINE bool IsAiming() const { return bAiming; };
+
+	/** Expose no of items overlapped in AreaSphere item tracing */
+	FORCEINLINE int8 GetOverlappedItemCount() const { return OverlappedItemCount; }
+
+	/** Incrememt/Decrement no of overlapped Items. When 0, can stop tracing */
+	void IncrememtOverlappedItemCount(int8 Amount);
 
 	/** Exposes CrosshairSpreadMultiplier to Blueprints */
 	UFUNCTION(BlueprintCallable)

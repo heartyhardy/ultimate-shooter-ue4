@@ -15,7 +15,19 @@ enum class EItemRarity : uint8
 	EWR_Rare UMETA(DisplayName = "Rare"),
 	EWR_Legendary UMETA(DisplayName = "Legendary"),
 
-	EWR_MAX UMETA(DisplayName = "DefaultMax")
+	EWR_MAX UMETA(DisplayName = "DefaultMAX")
+};
+
+UENUM()
+enum class EItemState : uint8
+{
+	EIS_Pickup UMETA(DisplayName = "Pickup"),
+	EIS_EquipInterping UMETA(DisplayName = "EquipInterping"),
+	EIS_PickedUp UMETA(DisplayName = "PickedUp"),
+	EIS_Equipped UMETA(DisplayName = "Equipped"),
+	EIS_Falling UMETA(DisplayName = "Falling"),
+
+	EIS_MAX UMETA(DisplayName = "DefaultMAX")
 };
 
 UCLASS()
@@ -54,6 +66,9 @@ protected:
 	/** Sets stars based on Item Rarity */
 	void SetActiveStars();
 
+	/** Sets item properties based on item state */
+	void SetItemProperties(EItemState State);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -88,7 +103,15 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	TArray<bool> ActiveStars;
 
-public:
-	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
+	/** State of the item */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	EItemState ItemState;
 
+public:
+	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
+	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
+	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; }
+	FORCEINLINE EItemState GetItemState() const { return ItemState; };
+	void SetItemState(EItemState State);
 };

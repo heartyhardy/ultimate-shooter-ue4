@@ -11,9 +11,12 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "DrawDebugHelpers.h"
 #include "Item.h"
+#include "Weapon.h"
 
 
 // Sets default values
@@ -88,6 +91,9 @@ void AShooterCharacter::BeginPlay()
 
 	DefaultCameraFOV = FollowCamera->FieldOfView;
 	CurrentCameraFOV = DefaultCameraFOV;
+
+	// Spawn the default weapon and equip it
+	EquipWeapon(SpawnDefaultWeapon());
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -504,16 +510,16 @@ void AShooterCharacter::TraceForItems()
 		if (CrosshairTraceHit.bBlockingHit)
 		{
 
-			AItem* HitItem = Cast<AItem>(CrosshairTraceHit.Actor);
-			if (HitItem && HitItem->GetPickupWidget())
+			TraceHitItem = Cast<AItem>(CrosshairTraceHit.Actor);
+			if (TraceHitItem && TraceHitItem->GetPickupWidget())
 			{
-				HitItem->GetPickupWidget()->SetVisibility(true);
+				TraceHitItem->GetPickupWidget()->SetVisibility(true);
 			}
 
 			// If we hit an Item last frame
 			if (TraceHitItemLastFrame)
 			{
-				if (HitItem != TraceHitItemLastFrame)
+				if (TraceHitItem != TraceHitItemLastFrame)
 				{
 					// We are hitting a different AItem this frame from last
 					// Or AItem is null
@@ -522,7 +528,7 @@ void AShooterCharacter::TraceForItems()
 			}
 
 			// Store reference to HitItem next frame
-			TraceHitItemLastFrame = HitItem;
+			TraceHitItemLastFrame = TraceHitItem;
 		}
 	}
 	else if (TraceHitItemLastFrame)
@@ -531,6 +537,74 @@ void AShooterCharacter::TraceForItems()
 		// Hide the last traced item if its not null
 		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
 	}
+}
+
+AWeapon* AShooterCharacter::SpawnDefaultWeapon()
+{
+	if (DefaultWeaponClass)
+	{
+		// Spawn the weapon
+		AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+		return DefaultWeapon;
+	}
+	return nullptr;
+}
+
+void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+{
+	if (WeaponToEquip)
+	{
+		// Get the socket attached to the right hand bone (hand_r)
+		const USkeletalMeshSocket* RightHandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+
+		if (RightHandSocket)
+		{
+			// Attach the given weapon to the socket
+			RightHandSocket->AttachActor(WeaponToEquip, GetMesh());
+		}
+
+		// Set the Given weapon as the Equipped weapon
+		EquippedWeapon = WeaponToEquip;
+		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+	}
+}
+
+void AShooterCharacter::DropWeapon()
+{
+	if (EquippedWeapon) // ADD && EquippedWeapon->GetItemState() == EItemState::EIS_Equipped ==> To stop Impulsing over and over
+	{
+		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+
+		EquippedWeapon->SetItemState(EItemState::EIS_Falling);
+		// Throw the weapon
+		EquippedWeapon->ThrowWeapon();
+	}
+}
+
+void AShooterCharacter::SwapWeapon(AWeapon* WeaponToSwap)
+{
+	DropWeapon();
+	EquipWeapon(WeaponToSwap);
+	// Clear the Tracehitweapon and LastTracehit because we just equipped the item
+
+	TraceHitItem = nullptr;
+	TraceHitItemLastFrame = nullptr;
+}
+
+// Select Button E is pressed
+void AShooterCharacter::SelectButtonPressed()
+{
+	if (TraceHitItem)
+	{
+		auto WeaponToSwap = Cast<AWeapon>(TraceHitItem);
+		SwapWeapon(WeaponToSwap);
+	}
+}
+
+// Select Button E is released
+void AShooterCharacter::SelectButtonReleased()
+{
 }
 
 // Called every frame
@@ -583,6 +657,10 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	/** Bind Aim ON/OFF to Input */
 	PlayerInputComponent->BindAction("AimWeapon", EInputEvent::IE_Pressed, this, &AShooterCharacter::StartAiming);
 	PlayerInputComponent->BindAction("AimWeapon", EInputEvent::IE_Released, this, &AShooterCharacter::StopAiming);
+
+	/** Bind Select E key to Input */
+	PlayerInputComponent->BindAction("Select", EInputEvent::IE_Pressed, this, &AShooterCharacter::SelectButtonPressed);
+	PlayerInputComponent->BindAction("Select", EInputEvent::IE_Released, this, &AShooterCharacter::SelectButtonReleased);
 }
 
 void AShooterCharacter::IncrememtOverlappedItemCount(int8 Amount)

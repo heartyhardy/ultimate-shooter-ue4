@@ -93,6 +93,22 @@ protected:
 	/** Trace for items if overlappedItemCount > 0 */
 	void TraceForItems();
 
+	/** Spawn the default weapon and attaches it to the mesh */
+	class AWeapon* SpawnDefaultWeapon();
+
+	/** Equippes any given weapon by attaching it to mesh */
+	void EquipWeapon(AWeapon* WeaponToEquip);
+
+	/** Detach weapon and let it fall to the ground */
+	void DropWeapon();
+
+	/** Drops currently Equipped weapon and Equipps TraceHitWeapon */
+	void SwapWeapon(AWeapon* WeaponToSwap);
+
+	/** Detach Weapon Action Mappings */
+	void SelectButtonPressed();
+	void SelectButtonReleased();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -223,6 +239,18 @@ private:
 	/** Item that was traced last frame. When trace doesnt hit, we can hide it using this */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item, meta =  (AllowPrivateAccess = "true"))
 	class AItem* TraceHitItemLastFrame;
+
+	/** Currently Equipped Weapon */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	AWeapon* EquippedWeapon;
+
+	/** Set this in blueprint as the default weapon */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AWeapon> DefaultWeaponClass;
+
+	/** Item Currently Hit by in TraceForItems() */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combt, meta = (AllowPrivateAccess = "true"))
+	AItem* TraceHitItem;
 
 public:
 

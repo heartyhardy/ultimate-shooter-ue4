@@ -3,6 +3,7 @@
 
 #include "Item.h"
 #include "ShooterCharacter.h"
+#include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
@@ -13,7 +14,15 @@ AItem::AItem() :
 	ItemName(FString("Default")),
 	ItemCount(0),
 	ItemRarity(EItemRarity::EWR_Common),
-	ItemState(EItemState::EIS_Pickup)
+	ItemState(EItemState::EIS_Pickup),
+	// Item interping
+	ZCurveTime(.7f),
+	ItemInterpStartLocation(FVector(0.f)),
+	CameraTargetLocation(FVector(0.f)),
+	bIsInterping(false),
+	ItemInterpX(0.f),
+	ItemInterpY(0.f),
+	InterpInitialYawOffset(0.f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -66,10 +75,10 @@ void AItem::OnSphereOverlap(
 {
 	if (OtherActor)
 	{
-		AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
-		if (ShooterCharacter)
+		AShooterCharacter* Shooter = Cast<AShooterCharacter>(OtherActor);
+		if (Shooter)
 		{
-			ShooterCharacter->IncrememtOverlappedItemCount(1);
+			Shooter->IncrememtOverlappedItemCount(1);
 		}
 	}
 }
@@ -78,10 +87,10 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 {
 	if (OtherActor)
 	{
-		AShooterCharacter* ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
-		if (ShooterCharacter)
+		AShooterCharacter* Shooter = Cast<AShooterCharacter>(OtherActor);
+		if (Shooter)
 		{
-			ShooterCharacter->IncrememtOverlappedItemCount(-1);
+			Shooter->IncrememtOverlappedItemCount(-1);
 		}
 	}
 }
@@ -189,6 +198,91 @@ void AItem::SetItemProperties(EItemState State)
 		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
+
+	case EItemState::EIS_EquipInterping:
+		
+		// Hide PickupWidget
+		PickupWidget->SetVisibility(false);
+
+		// Set Mesh Properties
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		// Set Area Sphere Properties
+		AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		// Set Collision Box Properties
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	}
+}
+
+void AItem::FinishItemInterping()
+{
+	bIsInterping = false;
+
+	if (ShooterCharacter)
+	{
+		ShooterCharacter->GetPickupItem(this);
+	}
+	// Set Item Scale to Normal After Picking up
+	SetActorScale3D(FVector(1.f, 1.f, 1.f));
+}
+
+void AItem::ItemInterp(float DeltaTime)
+{
+	if (!bIsInterping) return;
+
+	if (ShooterCharacter && ItemZCurve)
+	{
+		// Get currently elapsed time since starting the timer
+		const float ElapsedTime = GetWorldTimerManager().GetTimerElapsed(ItemInterpTimer);
+		const float CurveValue = ItemZCurve->GetFloatValue(ElapsedTime);
+
+		// Get the item's initial location when curve started
+		 FVector ItemLocation = ItemInterpStartLocation;
+		// Get the location in front of the camera
+		 const FVector CameraInterpLocation{ ShooterCharacter->GetCameraInterpLocation() };
+
+		// Get the Z difference between Item's location and Camera's location in front of it. X,Y Zeroed out!
+		 const FVector ItemToCamera{ FVector(0.f, 0.f, (CameraInterpLocation - ItemLocation).Z) };
+
+		 // Scale Factor to Multiply the Curve value!
+		 const float DeltaZ = ItemToCamera.Size();
+
+		 FVector CurrentLocation{ GetActorLocation() };
+		 // Interped X Value
+		 const float InterpXValue = FMath::FInterpTo(CurrentLocation.X, CameraInterpLocation.X, DeltaTime, 30.f);
+		 // Interped Y Value
+		 const float InterpYValue = FMath::FInterpTo(CurrentLocation.Y, CameraInterpLocation.Y, DeltaTime, 30.f);
+		 // Set ItemLocation X and Y to Interped values
+		 ItemLocation.X = InterpXValue;
+		 ItemLocation.Y = InterpYValue;
+
+		 // Adding Curve Value to the Initial Item location's Z and (Scaling with DeltaZ)
+		 ItemLocation.Z += CurveValue * DeltaZ;
+
+		 // Set the Items Z location according to the curve value
+		 SetActorLocation(ItemLocation, true, nullptr, ETeleportType::TeleportPhysics);
+
+		 // Camera Rotation for this Frame
+		 const FRotator CameraRotation{ ShooterCharacter->GetFollowCamera()->GetComponentRotation() };
+		 // Rotation Yaw Offset + Camera Yaw Offset
+		 FRotator ItemRotation{ 0.f, CameraRotation.Yaw + InterpInitialYawOffset, 0.f };
+		 // Set Rotation for the Item
+		 SetActorRotation(ItemRotation, ETeleportType::TeleportPhysics);
+
+		 // Item Scale interp according to the ItemScaleCurve asset
+		 if (ItemScaleCurve)
+		 {
+			const float ScaleCurveValue = ItemScaleCurve->GetFloatValue(ElapsedTime);
+			SetActorScale3D(FVector(ScaleCurveValue, ScaleCurveValue, ScaleCurveValue));
+		 }
 	}
 }
 
@@ -197,6 +291,8 @@ void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// Handle Item Interping when in EquipInterping State
+	ItemInterp(DeltaTime);
 }
 
 void AItem::SetItemState(EItemState State)
@@ -205,5 +301,32 @@ void AItem::SetItemState(EItemState State)
 	ItemState = State;
 	// Update Item properties depending on Current State
 	SetItemProperties(State);
+}
+
+void AItem::StartItemCurve(AShooterCharacter* Char)
+{
+	// Store a handle to the ShooterCharacter;
+	ShooterCharacter = Char;
+
+	// Store initial location of the item
+	ItemInterpStartLocation = GetActorLocation();
+	bIsInterping = true;
+
+	SetItemState(EItemState::EIS_EquipInterping); // Note: Dont forget to update collision properties
+
+	GetWorldTimerManager().SetTimer(
+		ItemInterpTimer,
+		this,
+		&AItem::FinishItemInterping,
+		ZCurveTime
+	);
+
+	// Initial Yaw of the Camera
+	const float CameraRotationYaw{ ShooterCharacter->GetFollowCamera()->GetComponentRotation().Yaw };
+	// Initial Yaw of the Item
+	const float ItemRotationYaw{ GetActorRotation().Yaw };
+
+	// Initial Yaw Offset between Camera and the Item
+	InterpInitialYawOffset = ItemRotationYaw - CameraRotationYaw;
 }
 

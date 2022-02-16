@@ -252,6 +252,14 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combt, meta = (AllowPrivateAccess = "true"))
 	AItem* TraceHitItem;
 
+	/** Distance outward from camera for the interp destination */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	float CameraInterpDistance;
+	
+	/** Distance upward from camera for the interp destination */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	float CameraInterpElevation;
+
 public:
 
 	/** Returns Camera boom subobject **/
@@ -272,4 +280,10 @@ public:
 	/** Exposes CrosshairSpreadMultiplier to Blueprints */
 	UFUNCTION(BlueprintCallable)
 	float GetCrosshairSpreadMultiplier() const;
+
+	/** Camera Interp Location */
+	FVector GetCameraInterpLocation();
+
+	/** Get Pickup item */
+	void GetPickupItem(AItem* Item);
 };

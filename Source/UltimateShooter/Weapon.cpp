@@ -5,7 +5,12 @@
 
 AWeapon::AWeapon() :
 	ThrowWeaponTime(0.7f),
-	bFalling(false)
+	bFalling(false),
+	Ammo(30),
+	MagazineCapacity(30),
+	WeaponType(EWeaponType::EWT_SubmachineGun),
+	AmmoType(EAmmoType::EAT_9mm),
+	ReloadMontageSection(FName(TEXT("ReloadSMG")))
 {
 	// This is a must for tick to work!
 	PrimaryActorTick.bCanEverTick = true;
@@ -52,6 +57,24 @@ void AWeapon::ThrowWeapon()
 	bFalling = true;
 	// Start the timer
 	GetWorldTimerManager().SetTimer(ThrowWeaponTimer, this, &AWeapon::StopFalling, ThrowWeaponTime);
+}
+
+void AWeapon::DecrementAmmo()
+{
+	if (Ammo - 1 <= 0)
+	{
+		Ammo = 0;
+	}
+	else
+	{
+		--Ammo;
+	}
+}
+
+void AWeapon::ReloadAmmo(int32 Amount)
+{
+	checkf(Ammo + Amount <= MagazineCapacity, TEXT("Attempted to overreload the Mag Capacity!!"));
+	Ammo += Amount;
 }
 
 void AWeapon::StopFalling()

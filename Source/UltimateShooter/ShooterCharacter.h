@@ -4,8 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AmmoType.h"
 #include "ShooterCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class ECombatState : uint8
+{
+	ECS_UnOccupied UMETA(DisplayName = "UnOccupied"),
+	ECS_FireTimerInProgress UMETA(DisplayName = "FireTimerInProgress"),
+	ECS_Reloading UMETA(DisplayName = "Reloading"),
+	
+	ECS_MAX UMETA(DisplayName = "DefaultMax")
+};
 
 UCLASS()
 class ULTIMATESHOOTER_API AShooterCharacter : public ACharacter
@@ -108,6 +118,30 @@ protected:
 	/** Detach Weapon Action Mappings */
 	void SelectButtonPressed();
 	void SelectButtonReleased();
+
+	/** Initialize AmmoMap with Starting Ammo values */
+	void InitializeAmmoMap();
+
+	/** Chedck to make sure weapon has ammo! */
+	bool WeaponHasAmmo();
+
+	/** FireWeapon functions */
+	void PlayFireSound();
+	void SendBullet();
+	void PlayGunfireMontage();
+
+	/** Bound to R key */
+	void ReloadButtonPressed();
+
+	/** Reload the weapon if Unoccupied */
+	void ReloadWeapon();
+
+	/** Called when Finished Reloading (on Notifier) */
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
+
+	/** Checks to see if we have ammo for the carrying weapon */
+	bool CarryingAmmo();
 
 public:	
 	// Called every frame
@@ -259,6 +293,26 @@ private:
 	/** Distance upward from camera for the interp destination */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
 	float CameraInterpElevation;
+
+	/** Map to keep track of different ammo types */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	TMap<EAmmoType, int32> AmmoMap;
+	
+	/** Starting amount of 9mm ammo */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 Starting9mmAmmo;
+
+	/** Starting amount of Assult Rifle ammo */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 StartingARAmmo;
+
+	/** Current combat state: Can only fire or Reload if UnOccupied */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	ECombatState CombatState;
+
+	/** Montage for Reload Animations */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* ReloadMontage;
 
 public:
 

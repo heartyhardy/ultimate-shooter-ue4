@@ -143,6 +143,14 @@ protected:
 	/** Checks to see if we have ammo for the carrying weapon */
 	bool CarryingAmmo();
 
+	/** Called when Character grabs the clip to reload notify (See ReloadSMG montage) */
+	UFUNCTION(BlueprintCallable)
+	void GrabClip();
+
+	/** Called when Character releases the clip notify (See ReloadSMG montage) */
+	UFUNCTION(BlueprintCallable)
+	void ReleaseClip();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -313,6 +321,14 @@ private:
 	/** Montage for Reload Animations */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* ReloadMontage;
+
+	/** Transform of the clip when we first grabbed the clip during reloading */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FTransform ClipTransform;
+
+	/** Scene Component to be attached to Actors hand during reloading  */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* HandSceneComponent;
 
 public:
 

@@ -58,6 +58,14 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	FName ReloadMontageSection;
 
+	/** This will be set to true when we are moving the clip to reload (See ReloadSMG Montage) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	bool bMovingClip;
+
+	/** Name of the bone that the Mag clip is attached to */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	FName ClipBoneName;
+
 public:
 	// Add impulse to the weapon
 	void ThrowWeapon();
@@ -76,4 +84,8 @@ public:
 	FORCEINLINE FName GetReloadMontageSection() const { return ReloadMontageSection; }
 
 	void ReloadAmmo(int32 Amount);
+
+	FORCEINLINE FName GetClipBoneName() const { return ClipBoneName; }
+	
+	FORCEINLINE void SetMovingClip(bool bMoving) { bMovingClip = bMoving; }
 };

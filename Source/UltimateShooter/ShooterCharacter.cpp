@@ -90,6 +90,9 @@ AShooterCharacter::AShooterCharacter() :
 	/** Configure Character Jump */
 	GetCharacterMovement()->JumpZVelocity = 350.f;
 	GetCharacterMovement()->AirControl = 0.2f; // How much responsive Character is while Airborne
+
+	/** Create HandSceneComponebnt */
+	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
 }
 
 // Called when the game starts or when spawned
@@ -573,6 +576,11 @@ void AShooterCharacter::SelectButtonPressed()
 	if (TraceHitItem)
 	{
 		TraceHitItem->StartItemCurve(this);
+
+		if (TraceHitItem->GetPickupSound())
+		{
+			UGameplayStatics::PlaySound2D(this, TraceHitItem->GetPickupSound());
+		}
 	}
 }
 
@@ -736,6 +744,30 @@ bool AShooterCharacter::CarryingAmmo()
 	return false;
 }
 
+void AShooterCharacter::GrabClip()
+{
+	if (!EquippedWeapon) return;
+	if (!HandSceneComponent) return;
+
+	int32 ClipBoneIndex{ EquippedWeapon->GetItemMesh()->GetBoneIndex(EquippedWeapon->GetClipBoneName()) };
+	ClipTransform = EquippedWeapon->GetItemMesh()->GetBoneTransform(ClipBoneIndex);
+
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
+	// Attach it to the Hand mesh using above rules
+	HandSceneComponent->AttachToComponent(GetMesh(), AttachmentRules, FName(TEXT("hand_l")));
+	// Set World Transform of the HandSceneComponent to the clip's world transform
+	HandSceneComponent->SetWorldTransform(ClipTransform);
+
+	//Set bool bMovingClip in weapon to true
+	EquippedWeapon->SetMovingClip(true);
+}
+
+void AShooterCharacter::ReleaseClip()
+{
+	//Set bool bMovingClip in weapon to false
+	EquippedWeapon->SetMovingClip(false);
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -828,6 +860,11 @@ FVector AShooterCharacter::GetCameraInterpLocation()
 /** This will be called from AItem Class */
 void AShooterCharacter::GetPickupItem(AItem* Item)
 {
+	if (Item && Item->GetEquipSound())
+	{
+		UGameplayStatics::PlaySound2D(this, Item->GetEquipSound());
+	}
+
 	auto PickedWeapon = Cast<AWeapon>(Item);
 
 	if (PickedWeapon)

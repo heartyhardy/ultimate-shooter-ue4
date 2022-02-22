@@ -862,6 +862,7 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 {
 	if (Item && Item->GetEquipSound())
 	{
+		// Sound played after Equip Interping
 		UGameplayStatics::PlaySound2D(this, Item->GetEquipSound());
 	}
 

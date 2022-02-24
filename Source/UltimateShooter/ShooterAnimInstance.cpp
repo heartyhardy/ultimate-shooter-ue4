@@ -6,6 +6,23 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
+UShooterAnimInstance::UShooterAnimInstance() :
+	Speed(0.f),
+	bIsInAir(false),
+	bIsAccelerating(false),
+	MovementOffsetYaw(0.f),
+	LastMovementOffsetYaw(0.f),
+	bAiming(false),
+	TIPCharacterYaw(0.f),
+	TIPCharacterYawLastFrame(0.f),
+	RootYawOffset(0.f),
+	Pitch(0.f),
+	bReloading(false),
+	OffsetState(EOffsetState::EOS_Hip)
+{
+
+}
+
 void UShooterAnimInstance::NativeInitializeAnimation()
 {
 	ShooterCharacter = Cast<AShooterCharacter>(TryGetPawnOwner());
@@ -21,6 +38,9 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 
 	if (ShooterCharacter)
 	{
+		
+		bReloading = ShooterCharacter->GetCombatState() == ECombatState::ECS_Reloading;
+
 		/** Get Velocity of the Character*/
 		FVector Velocity = ShooterCharacter->GetVelocity();
 		/** Get only the Lateral speed of the Velocity. We don't need Z-axis (character falling/flying) */
@@ -69,6 +89,23 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		/** Is the Character aiming their weapon? Needs this in Animation Blueprint */
 		bAiming = ShooterCharacter->IsAiming();
 
+		if (bReloading)
+		{
+			OffsetState = EOffsetState::EOS_Reloading;
+		}
+		else if (bIsInAir)
+		{
+			OffsetState = EOffsetState::EOS_InAir;
+		}
+		else if (ShooterCharacter->IsAiming())
+		{
+			OffsetState = EOffsetState::EOS_Aiming;
+		}
+		else
+		{
+			OffsetState = EOffsetState::EOS_Hip;
+		}
+
 		/** FOR DEBUG PURPOSES ONLY
 		
 		FString RotationMessage = FString::Printf(TEXT("Base Aim Rotation: %f"), AimRotation.Yaw);
@@ -82,5 +119,77 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 			GEngine->AddOnScreenDebugMessage(3, 0.f, FColor::White, MovementOffsetMessage);
 		}
 		*/
+	}
+	/** Handle Turn in Place */
+	TurnInPlace();
+
+	/** Lean */
+	Lean(DeltaTime);
+}
+
+void UShooterAnimInstance::TurnInPlace()
+{
+	if (!ShooterCharacter) return;
+
+	Pitch = ShooterCharacter->GetBaseAimRotation().Pitch;
+
+	// No need to turn in place if character is moving
+	if (Speed > 0 || bIsInAir)
+	{
+		RootYawOffset = 0.f;
+		TIPCharacterYaw = ShooterCharacter->GetActorRotation().Yaw;
+		TIPCharacterYawLastFrame = TIPCharacterYaw;
+
+		RotationCurve = 0.f;
+		RotationCurveLastFrame = 0.f;
+	}
+
+	TIPCharacterYawLastFrame = TIPCharacterYaw;
+	TIPCharacterYaw = ShooterCharacter->GetActorRotation().Yaw;
+
+	float DeltaYaw{ TIPCharacterYaw - TIPCharacterYawLastFrame };
+
+	// RootYawOffset updated and clamped to -180 to 180
+	RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - DeltaYaw);
+
+	// Turning metadata value will be 1 if animation playing or 0 if not
+	const float Turning = GetCurveValue(TEXT("Turning"));
+
+	if (Turning > 0.f)
+	{
+		RotationCurveLastFrame = RotationCurve;
+		RotationCurve = GetCurveValue(TEXT("CurveRotation"));
+		const float DeltaRotaion{ RotationCurve - RotationCurveLastFrame };
+
+		// If RootYawOffset is positive = Character is Turning Left
+		// ELSE Turning Right
+		RootYawOffset > 0.f ? RootYawOffset -= DeltaRotaion : RootYawOffset += DeltaRotaion;
+
+		const float ABSRootYawOffset{ FMath::Abs(RootYawOffset) };
+
+		if (ABSRootYawOffset > 90.f)
+		{
+			const float YawExcess{ ABSRootYawOffset - 90.f };
+			RootYawOffset > 0.f ? RootYawOffset -= YawExcess : RootYawOffset += YawExcess;
+		}
+
+	}
+}
+
+void UShooterAnimInstance::Lean(float DeltaTime)
+{
+	if (!ShooterCharacter) return;
+
+	CharacterYawLastFrame = CharacterYaw;
+	CharacterYaw = ShooterCharacter->GetActorRotation().Yaw;
+
+	const float Target{ (CharacterYaw - CharacterYawLastFrame) / DeltaTime }; // Dividing from DT instead of multiplying to increase the lean
+	const float Interp{ FMath::FInterpTo(YawDelta, Target, DeltaTime, 6.f) };
+
+	YawDelta = FMath::Clamp(Interp, -90.f, 90.f);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(3, -1, FColor::Blue, FString::Printf(TEXT("Yaw Delta: %f"), YawDelta));
 	}
 }

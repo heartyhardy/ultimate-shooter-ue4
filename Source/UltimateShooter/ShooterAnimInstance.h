@@ -97,12 +97,16 @@ private:
 	EOffsetState OffsetState;
 
 	/** Yaw of the character this frame */
-	float CharacterYaw;
+	FRotator CharacterRotation;
 
 	/** Yaw of the character prvious frame */
-	float CharacterYawLastFrame;
+	FRotator CharacterRotationLastFrame;
 
 	/** Yaw delta used for leaning in the Running blendspace */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Lean", meta = (AllowPrivateAccess = "true"))
 	float YawDelta;
+
+	/** Used to determine if the Character is crouching */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crouching", meta = (AllowPrivateAccess = "true"))
+	bool bCrouching;
 };

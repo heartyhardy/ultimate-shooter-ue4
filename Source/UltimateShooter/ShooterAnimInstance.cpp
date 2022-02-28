@@ -20,7 +20,9 @@ UShooterAnimInstance::UShooterAnimInstance() :
 	bReloading(false),
 	OffsetState(EOffsetState::EOS_Hip),
 	CharacterRotation(FRotator::ZeroRotator),
-	CharacterRotationLastFrame(FRotator::ZeroRotator)
+	CharacterRotationLastFrame(FRotator::ZeroRotator),
+	RecoilWeight(1.f),
+	bTurningInPlace(false)
 {
 
 }
@@ -160,6 +162,7 @@ void UShooterAnimInstance::TurnInPlace()
 
 	if (Turning > 0.f)
 	{
+		bTurningInPlace = true;
 		RotationCurveLastFrame = RotationCurve;
 		RotationCurve = GetCurveValue(TEXT("CurveRotation"));
 		const float DeltaRotaion{ RotationCurve - RotationCurveLastFrame };
@@ -176,6 +179,48 @@ void UShooterAnimInstance::TurnInPlace()
 			RootYawOffset > 0.f ? RootYawOffset -= YawExcess : RootYawOffset += YawExcess;
 		}
 
+	}
+	else
+	{
+		bTurningInPlace = false;
+	}
+
+	// Turning in Place dependant recoil weights
+	if (bTurningInPlace)
+	{
+		if (bReloading)
+		{
+			RecoilWeight = 1.f;
+		}
+		else
+		{
+			RecoilWeight = 0.f;
+		}
+	}
+	else // Not turning in place
+	{
+		if (bCrouching)
+		{
+			if (bReloading)
+			{
+				RecoilWeight = 1.f;
+			}
+			else
+			{
+				RecoilWeight = 0.1f;
+			}
+		}
+		else
+		{
+			if (bAiming || bReloading)
+			{
+				RecoilWeight = 1.f;
+			}
+			else
+			{
+				RecoilWeight = 0.5f;
+			}
+		}
 	}
 }
 

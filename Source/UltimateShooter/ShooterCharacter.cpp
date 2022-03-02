@@ -4,6 +4,7 @@
 #include "ShooterCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
@@ -31,12 +32,12 @@ AShooterCharacter::AShooterCharacter() :
 	// Mouse Turn and LookUp rates
 	MouseHipTurnRate(1.f),
 	MouseHipLookUpRate(1.f),
-	MouseAimTurnRate(0.2f),
-	MouseAimLookUpRate(0.2f),
+	MouseAimTurnRate(0.6f),
+	MouseAimLookUpRate(0.6f),
 	bAiming(false),
 	// FOV values when Aiming ON/OFF
 	DefaultCameraFOV(0.f), // Will be changed in constructor
-	ZoomedCameraFOV(35.f),
+	ZoomedCameraFOV(25.f),
 	CurrentCameraFOV(0.f),
 	CameraInterpSpeed(20.f),
 	// Crosshair Spread
@@ -65,7 +66,11 @@ AShooterCharacter::AShooterCharacter() :
 	// Movement
 	bCrouching(false),
 	BaseMovementSpeed(650.f),
-	CrouchMovementSpeed(300.f)
+	CrouchMovementSpeed(300.f),
+	CrouchingCapsuleHalfHeight(44.f),
+	StandingCapsuleHalfHeight(88.f),
+	BaseGroundFriction(2.f),
+	CrouchingGroundFriction(100.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -74,7 +79,7 @@ AShooterCharacter::AShooterCharacter() :
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 200.f; // Camera follows the pawn at this distance
-	CameraBoom->SocketOffset = FVector(0.f, 50.f, 70.f); // Offset the camera to right and up in Z
+	CameraBoom->SocketOffset = FVector(0.f, 50.f, 75.f); // Offset the camera to right and up in Z
 	CameraBoom->bUsePawnControlRotation = true; // Uses Pawn's orientation 
 
 	/** Create a Follow Camera and setup: Camera Boom controls it **/
@@ -785,10 +790,12 @@ void AShooterCharacter::CrouchButtonPressed()
 	if (bCrouching)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = CrouchMovementSpeed;
+		GetCharacterMovement()->GroundFriction = CrouchingGroundFriction;
 	}
 	else
 	{
 		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+		GetCharacterMovement()->GroundFriction = BaseGroundFriction;
 	}
 }
 
@@ -803,6 +810,38 @@ void AShooterCharacter::Jump()
 	{
 		ACharacter::Jump();
 	}
+}
+
+void AShooterCharacter::InterpCapsuleHalfHeight(float DeltaTime)
+{
+	float TargetCapsuleHalfHeight{};
+
+	if (bCrouching)
+	{
+		TargetCapsuleHalfHeight = CrouchingCapsuleHalfHeight;
+	}
+	else
+	{
+		TargetCapsuleHalfHeight = StandingCapsuleHalfHeight;
+	}
+
+	const float InterpHalfHeight{ FMath::FInterpTo(
+		GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
+		TargetCapsuleHalfHeight,
+		DeltaTime,
+		20.f
+	) };
+
+	// Elevate/Lower mesh
+	// Negative value if Crouching
+	// Positive Value when Standing
+	const float DeltaCapsuleHalfHeight{ InterpHalfHeight - GetCapsuleComponent()->GetScaledCapsuleHalfHeight() };
+
+	const FVector MeshOffset{ 0.f, 0.f, -DeltaCapsuleHalfHeight };
+
+	GetMesh()->AddLocalOffset(MeshOffset);
+
+	GetCapsuleComponent()->SetCapsuleHalfHeight(InterpHalfHeight, true);
 }
 
 // Called every frame
@@ -821,6 +860,9 @@ void AShooterCharacter::Tick(float DeltaTime)
 
 	/** Trace for Items */
 	TraceForItems();
+
+	/** Interp the capsule half height based on the crouching/standing */
+	InterpCapsuleHalfHeight(DeltaTime);
 }
 
 // Called to bind functionality to input

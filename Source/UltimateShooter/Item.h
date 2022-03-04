@@ -30,6 +30,16 @@ enum class EItemState : uint8
 	EIS_MAX UMETA(DisplayName = "DefaultMAX")
 };
 
+UENUM()
+enum class EItemType: uint8
+{
+	EIT_Ammo UMETA(DisplayName = "Ammo"),
+	EIT_Weapon UMETA(DisplayName = "Weapon"),
+
+
+	EIT_MAX UMETA(DisplayName = "DefaultMAX")
+};
+
 UCLASS()
 class ULTIMATESHOOTER_API AItem : public AActor
 {
@@ -67,7 +77,7 @@ protected:
 	void SetActiveStars();
 
 	/** Sets item properties based on item state */
-	void SetItemProperties(EItemState State);
+	virtual void SetItemProperties(EItemState State);
 
 	/** Called when Item Interping is finished */
 	void FinishItemInterping();
@@ -75,9 +85,18 @@ protected:
 	/** Perform item interp curve: Handles item interping */
 	void ItemInterp(float DeltaTime);
 
+	/** Get interplocation based on Type */
+	FVector GetInterpLocation();
+
+	void PlayPickupSound();
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	// Called in ShooterCharacter->GetPickupItem
+	void PlayEquipSound();
 
 private:
 
@@ -159,6 +178,14 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	class USoundCue* EquipSound;
 
+	/** Enum for the type of item this item is */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	EItemType ItemType;
+
+	/** Index of the interp location this item interping to */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	int32 InterpLocIndex;
+
 public:
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
@@ -167,6 +194,7 @@ public:
 	FORCEINLINE EItemState GetItemState() const { return ItemState; };
 	FORCEINLINE USoundCue* GetPickupSound() const { return PickupSound; }
 	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
+	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 
 	void SetItemState(EItemState State);
 

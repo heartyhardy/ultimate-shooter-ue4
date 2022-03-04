@@ -18,6 +18,7 @@
 #include "DrawDebugHelpers.h"
 #include "Item.h"
 #include "Weapon.h"
+#include "Ammo.h"
 
 
 // Sets default values
@@ -70,7 +71,14 @@ AShooterCharacter::AShooterCharacter() :
 	CrouchingCapsuleHalfHeight(44.f),
 	StandingCapsuleHalfHeight(88.f),
 	BaseGroundFriction(2.f),
-	CrouchingGroundFriction(100.f)
+	CrouchingGroundFriction(100.f),
+	//Aiming
+	bAimingButtonPressed(false),
+	// Pickup and Equip sound properties
+	bShouldPlayEquipSound(true),
+	bShouldPlayPickupSound(true),
+	PickupSoundResetTime(0.2f),
+	EquipSoundResetTime(0.2f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -102,6 +110,28 @@ AShooterCharacter::AShooterCharacter() :
 
 	/** Create HandSceneComponebnt */
 	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
+
+	/** Create Interpolation components */
+	WeaponInterpComp = CreateDefaultSubobject<USceneComponent>(TEXT("Weapon Interpolation Component"));
+	WeaponInterpComp->SetupAttachment(GetFollowCamera());
+
+	InterpComp1 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 1"));
+	InterpComp1->SetupAttachment(GetFollowCamera());
+	
+	InterpComp2 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 2"));
+	InterpComp2->SetupAttachment(GetFollowCamera());
+	
+	InterpComp3 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 3"));
+	InterpComp3->SetupAttachment(GetFollowCamera());
+	
+	InterpComp4 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 4"));
+	InterpComp4->SetupAttachment(GetFollowCamera());
+	
+	InterpComp5 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 5"));
+	InterpComp5->SetupAttachment(GetFollowCamera());
+	
+	InterpComp6 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 6"));
+	InterpComp6->SetupAttachment(GetFollowCamera());
 }
 
 // Called when the game starts or when spawned
@@ -120,6 +150,9 @@ void AShooterCharacter::BeginPlay()
 
 	// Set the base movement speed
 	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+
+	// Create Interplocations for each element in array
+	InitializeInterpLocations();
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -256,12 +289,120 @@ void AShooterCharacter::FireWeapon()
 /** Set Aiming ON/OFF */
 void AShooterCharacter::StartAiming()
 {
+	bAimingButtonPressed = true;
+	if (CombatState != ECombatState::ECS_Reloading)
+	{
+		Aim();
+	}
+}
+
+void AShooterCharacter::Aim()
+{
 	bAiming = true;
+	GetCharacterMovement()->MaxWalkSpeed = CrouchMovementSpeed; //Walking slowly while aiming
+}
+
+void AShooterCharacter::ExitAiming()
+{
+	bAiming = false;
+	if (!bCrouching)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed; //Walking slowly while aiming
+	}
+}
+
+void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
+{
+	// Check to see if AmmoMap contains above ammo type
+	if (AmmoMap.Find(Ammo->GetAmmoType()))
+	{
+		int32 AmmoCount{ AmmoMap[Ammo->GetAmmoType()] };
+		AmmoCount += Ammo->GetItemCount();
+
+		// Set amount of ammo for this type
+		AmmoMap[Ammo->GetAmmoType()] = AmmoCount;
+	}
+
+	if (EquippedWeapon && EquippedWeapon->GetAmmoType() == Ammo->GetAmmoType())
+	{
+		// Check if Gun is empty
+		if (EquippedWeapon->GetAmmo() == 0)
+		{
+			ReloadWeapon();
+		}
+	}
+
+	Ammo->Destroy();
+}
+
+void AShooterCharacter::InitializeInterpLocations()
+{
+	FInterpLocation WeaponLocation{WeaponInterpComp,0};
+	InterpLocations.Add(WeaponLocation);
+
+	FInterpLocation InterpLoc1{ InterpComp1, 0 };
+	InterpLocations.Add(InterpLoc1);
+
+	FInterpLocation InterpLoc2{ InterpComp2, 0 };
+	InterpLocations.Add(InterpLoc2);
+
+	FInterpLocation InterpLoc3{ InterpComp3, 0 };
+	InterpLocations.Add(InterpLoc3);
+
+	FInterpLocation InterpLoc4{ InterpComp4, 0 };
+	InterpLocations.Add(InterpLoc4);
+
+	FInterpLocation InterpLoc5{ InterpComp5, 0 };
+	InterpLocations.Add(InterpLoc5);
+
+	FInterpLocation InterpLoc6{ InterpComp6, 0 };
+	InterpLocations.Add(InterpLoc6);
+}
+
+int32 AShooterCharacter::GetInterpLocationIndex()
+{
+	int32 LowestIndex{ 1 };
+	int32 LowestCount{ INT_MAX };
+
+	// Find min
+	for (int32 i = 1; i < InterpLocations.Num(); i++)
+	{
+		if (InterpLocations[i].ItemCount < LowestCount)
+		{
+			LowestIndex = i;
+			LowestCount = InterpLocations[i].ItemCount;
+		}
+	}
+
+	return LowestIndex;
+}
+
+void AShooterCharacter::IncrementInterpLocItemCount(int32 Index, int32 Amount)
+{
+	if (Amount < -1 || Amount > 1) return;
+
+	if (InterpLocations.Num() >= Index)
+	{
+		InterpLocations[Index].ItemCount += Amount;
+	}
+}
+
+void AShooterCharacter::StartPickupSoundTimer()
+{
+	bShouldPlayPickupSound = false;
+	GetWorldTimerManager().SetTimer(PickupSoundTimer, this, &AShooterCharacter::ResetPickupSoundTimer, PickupSoundResetTime);
+}
+
+void AShooterCharacter::StartEquipSoundTimer()
+{
+	bShouldPlayEquipSound = false;
+	GetWorldTimerManager().SetTimer(EquipSoundTimer, this, &AShooterCharacter::ResetEquipSoundTimer, EquipSoundResetTime);
 }
 
 void AShooterCharacter::StopAiming()
 {
-	bAiming = false;
+	bAimingButtonPressed = false;
+	ExitAiming();
 }
 
 void AShooterCharacter::InterpCameraZoom(float DeltaTime)
@@ -588,11 +729,6 @@ void AShooterCharacter::SelectButtonPressed()
 	if (TraceHitItem)
 	{
 		TraceHitItem->StartItemCurve(this);
-
-		if (TraceHitItem->GetPickupSound())
-		{
-			UGameplayStatics::PlaySound2D(this, TraceHitItem->GetPickupSound());
-		}
 	}
 }
 
@@ -686,12 +822,17 @@ void AShooterCharacter::ReloadButtonPressed()
 void AShooterCharacter::ReloadWeapon()
 {
 	if (CombatState != ECombatState::ECS_UnOccupied) return;
+
 	if (!EquippedWeapon) return;
 
 	// Create a function if we have correct ammo type
 
 	if (CarryingAmmo() && !EquippedWeapon->ClipIsFull())
 	{
+		if (bAiming) // If Aiming while reloading, stop aiming
+		{
+			ExitAiming();
+		}
 
 		CombatState = ECombatState::ECS_Reloading;
 
@@ -710,6 +851,12 @@ void AShooterCharacter::FinishReloading()
 {
 	// Update Combat State
 	CombatState = ECombatState::ECS_UnOccupied;
+
+	// If reloading finished but Aiming button is still pressed
+	if (bAimingButtonPressed)
+	{
+		Aim();
+	}
 
 	if (!EquippedWeapon) return;
 
@@ -910,6 +1057,16 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 }
 
+void AShooterCharacter::ResetPickupSoundTimer()
+{
+	bShouldPlayPickupSound = true;
+}
+
+void AShooterCharacter::ResetEquipSoundTimer()
+{
+	bShouldPlayEquipSound = true;
+}
+
 void AShooterCharacter::IncrememtOverlappedItemCount(int8 Amount)
 {
 	if (OverlappedItemCount + Amount <= 0)
@@ -929,6 +1086,10 @@ float AShooterCharacter::GetCrosshairSpreadMultiplier() const
 	return CrosshairSpreadMultiplier;
 }
 
+/*
+* DEPRECATED
+* Replaced by GetInterpLocation in AItem
+* 
 FVector AShooterCharacter::GetCameraInterpLocation()
 {
 	const FVector CameraWorldLocation{ FollowCamera->GetComponentLocation() };
@@ -938,14 +1099,14 @@ FVector AShooterCharacter::GetCameraInterpLocation()
 		FVector(0.f, 0.f, CameraInterpElevation);
 
 }
+*/
 
 /** This will be called from AItem Class */
 void AShooterCharacter::GetPickupItem(AItem* Item)
 {
-	if (Item && Item->GetEquipSound())
+	if (Item)
 	{
-		// Sound played after Equip Interping
-		UGameplayStatics::PlaySound2D(this, Item->GetEquipSound());
+		Item->PlayEquipSound();
 	}
 
 	auto PickedWeapon = Cast<AWeapon>(Item);
@@ -954,5 +1115,21 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 	{
 		SwapWeapon(PickedWeapon);
 	}
+
+	auto Ammo = Cast<AAmmo>(Item);
+	
+	if (Ammo)
+	{
+		PickupAmmo(Ammo);
+	}
+}
+
+FInterpLocation AShooterCharacter::GetInterpLocation(int32 index)
+{
+	if (index <= InterpLocations.Num())
+	{
+		return InterpLocations[index];
+	}
+	return FInterpLocation(); //Return empty interp location
 }
 

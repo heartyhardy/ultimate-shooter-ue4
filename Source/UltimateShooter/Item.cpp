@@ -26,7 +26,9 @@ AItem::AItem() :
 	ItemInterpY(0.f),
 	InterpInitialYawOffset(0.f),
 	ItemType(EItemType::EIT_MAX),
-	InterpLocIndex(0)
+	InterpLocIndex(0),
+	MaterialIndex(0),
+	bCanChangeCustomDepth(true)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -66,6 +68,9 @@ void AItem::BeginPlay()
 
 	// Set Default Item State
 	SetItemProperties(ItemState);
+
+	// Initialize Custom Depth to false
+	InitializeCustomDepth();
 }
 
 /** Callback function for AreaSphere BeginComponentOverlap */
@@ -237,6 +242,12 @@ void AItem::FinishItemInterping()
 	}
 	// Set Item Scale to Normal After Picking up
 	SetActorScale3D(FVector(1.f, 1.f, 1.f));
+
+	// After Equipping, Glow and Custom depth disabled
+	DisableGlowMaterial();
+	bCanChangeCustomDepth = true; // This needs to be done before DisableCustomDepth();
+	DisableCustomDepth();
+
 }
 
 void AItem::ItemInterp(float DeltaTime)
@@ -323,6 +334,54 @@ void AItem::PlayPickupSound()
 	}
 }
 
+void AItem::EnableCustomDepth()
+{
+	if (bCanChangeCustomDepth)
+	{
+		ItemMesh->SetRenderCustomDepth(true);
+	}
+}
+
+void AItem::DisableCustomDepth()
+{
+	if (bCanChangeCustomDepth)
+	{
+		ItemMesh->SetRenderCustomDepth(false);
+	}
+}
+
+void AItem::InitializeCustomDepth()
+{
+	DisableCustomDepth();
+}
+
+void AItem::OnConstruction(const FTransform& Transform)
+{
+	if (MaterialInstance)
+	{
+		DynamicMaterialInstance = UMaterialInstanceDynamic::Create(MaterialInstance, this);
+		ItemMesh->SetMaterial(MaterialIndex, DynamicMaterialInstance);
+	}
+
+	EnableGlowMaterial();
+}
+
+void AItem::EnableGlowMaterial()
+{
+	if (DynamicMaterialInstance)
+	{
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("Glow Blend Alpha"), 0); // Check Graph: Setting 0 picks Option A (Glow)
+	}
+}
+
+void AItem::DisableGlowMaterial()
+{
+	if (DynamicMaterialInstance)
+	{
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("Glow Blend Alpha"), 1); // Check Graph: Setting 1 picks Option B
+	}
+}
+
 void AItem::PlayEquipSound()
 {
 	if (ShooterCharacter)
@@ -387,5 +446,7 @@ void AItem::StartItemCurve(AShooterCharacter* Char)
 
 	// Initial Yaw Offset between Camera and the Item
 	InterpInitialYawOffset = ItemRotationYaw - CameraRotationYaw;
+
+	bCanChangeCustomDepth = false; // When Interping hide outline and custom depth effects on material
 }
 

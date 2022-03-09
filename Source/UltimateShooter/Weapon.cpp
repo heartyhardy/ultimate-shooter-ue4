@@ -58,6 +58,8 @@ void AWeapon::ThrowWeapon()
 	bFalling = true;
 	// Start the timer
 	GetWorldTimerManager().SetTimer(ThrowWeaponTimer, this, &AWeapon::StopFalling, ThrowWeaponTime);
+
+	EnableGlowMaterial(); // Enable Glow after throwing down
 }
 
 void AWeapon::DecrementAmmo()

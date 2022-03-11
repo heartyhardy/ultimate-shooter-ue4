@@ -10,6 +10,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "Curves/CurveVector.h"
 
 // Sets default values
 AItem::AItem() :
@@ -28,7 +29,12 @@ AItem::AItem() :
 	ItemType(EItemType::EIT_MAX),
 	InterpLocIndex(0),
 	MaterialIndex(0),
-	bCanChangeCustomDepth(true)
+	bCanChangeCustomDepth(true),
+	//Dynamic material params
+	GlowAmount(30.f),
+	FresnelExponent(3.f),
+	FresnelReflectFraction(4.f),
+	PulseCurveTime(5.f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -71,6 +77,9 @@ void AItem::BeginPlay()
 
 	// Initialize Custom Depth to false
 	InitializeCustomDepth();
+
+	// Start the Curve Pulse Timer for Dynamic materials If in PICKUP state
+	StartPulseTimer();
 }
 
 /** Callback function for AreaSphere BeginComponentOverlap */
@@ -239,6 +248,7 @@ void AItem::FinishItemInterping()
 	{
 		ShooterCharacter->IncrementInterpLocItemCount(InterpLocIndex, -1); // Substract from the interplocaions for this index
 		ShooterCharacter->GetPickupItem(this);
+		SetItemState(EItemState::EIS_PickedUp);
 	}
 	// Set Item Scale to Normal After Picking up
 	SetActorScale3D(FVector(1.f, 1.f, 1.f));
@@ -374,6 +384,38 @@ void AItem::EnableGlowMaterial()
 	}
 }
 
+void AItem::UpdatePulse()
+{
+	float ElapsedTime{};
+	FVector CurveValue{};
+
+	switch (ItemState)
+	{
+	case EItemState::EIS_Pickup:
+		if (PulseCurve)
+		{
+			ElapsedTime = GetWorldTimerManager().GetTimerElapsed(PulseTimer);
+			CurveValue = PulseCurve->GetVectorValue(ElapsedTime);
+		}
+		break;
+
+	case EItemState::EIS_EquipInterping:
+		if (InterpPulseCurve)
+		{
+			ElapsedTime = GetWorldTimerManager().GetTimerElapsed(ItemInterpTimer);
+			CurveValue = InterpPulseCurve->GetVectorValue(ElapsedTime);
+		}
+		break;
+	}
+
+	if (DynamicMaterialInstance)
+	{
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("Glow Amount"), CurveValue.X * GlowAmount); //GlowAmount var is used to scale CurveValue
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("Fresnel Exponent"), CurveValue.Y * FresnelExponent);
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("Fresnel Reflect Fraction"), CurveValue.Z * FresnelReflectFraction);
+	}
+}
+
 void AItem::DisableGlowMaterial()
 {
 	if (DynamicMaterialInstance)
@@ -404,6 +446,25 @@ void AItem::Tick(float DeltaTime)
 
 	// Handle Item Interping when in EquipInterping State
 	ItemInterp(DeltaTime);
+
+	// Get Values from pulse curve and set Dynamic material properties for Glow
+	UpdatePulse();
+}
+
+void AItem::ResetPulseTimer()
+{
+	StartPulseTimer();
+}
+
+void AItem::StartPulseTimer()
+{
+	/** Note that this function is calling iteself
+	* If in PICKUP State, it will keep running the timer
+	*/
+	if (ItemState == EItemState::EIS_Pickup)
+	{
+		GetWorldTimerManager().SetTimer(PulseTimer, this, &AItem::ResetPulseTimer, PulseCurveTime);
+	}
 }
 
 void AItem::SetItemState(EItemState State)
@@ -431,6 +492,7 @@ void AItem::StartItemCurve(AShooterCharacter* Char)
 	bIsInterping = true;
 
 	SetItemState(EItemState::EIS_EquipInterping); // Note: Dont forget to update collision properties
+	GetWorldTimerManager().ClearTimer(PulseTimer); // Clear Pulse Timer as soon as Interp Starts
 
 	GetWorldTimerManager().SetTimer(
 		ItemInterpTimer,

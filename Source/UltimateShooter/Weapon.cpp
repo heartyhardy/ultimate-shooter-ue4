@@ -90,5 +90,6 @@ void AWeapon::StopFalling()
 	bFalling = false;
 	// Set the weapon state to Pickup (Ready to pickup)
 	SetItemState(EItemState::EIS_Pickup);
-	UE_LOG(LogTemp, Warning, TEXT("Item State: %d") , GetItemState());
+	// Enable Glow Pulsing after throwing down the weapon
+	StartPulseTimer();
 }

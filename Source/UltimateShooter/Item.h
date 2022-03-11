@@ -96,6 +96,10 @@ protected:
 
 	void EnableGlowMaterial();
 
+	void ResetPulseTimer();
+	void StartPulseTimer();
+	void UpdatePulse();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -204,6 +208,41 @@ private:
 	UMaterialInstance* MaterialInstance;
 
 	bool bCanChangeCustomDepth;
+
+	/** Curve to drive dyanmic material params */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	class UCurveVector* PulseCurve;
+
+	/** Curve to drive dyanmic material params */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UCurveVector* InterpPulseCurve; // For Glow Flash Effect when Interping
+
+	FTimerHandle PulseTimer;
+
+	/** Time for the Pulse Timer */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	float PulseCurveTime;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	float GlowAmount;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	float FresnelExponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	float FresnelReflectFraction;
+
+	/** Background for this item in inventory */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
+	UTexture2D* IconBackground;
+
+	/** Icon for this item in inventory */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
+	UTexture2D* IconItem;
+
+	/** Icon for ammo in this item in inventory */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
+	UTexture2D* AmmoItem;
 
 public:
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }

@@ -88,7 +88,7 @@ protected:
 	/** Get interplocation based on Type */
 	FVector GetInterpLocation();
 
-	void PlayPickupSound();
+	void PlayPickupSound(bool bForcePlaySound = false);
 
 	virtual void InitializeCustomDepth();
 
@@ -105,7 +105,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Called in ShooterCharacter->GetPickupItem
-	void PlayEquipSound();
+	void PlayEquipSound(bool bForcePlaySound = false);
 
 private:
 
@@ -244,6 +244,14 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
 	UTexture2D* AmmoItem;
 
+	/** Slot in the inventory Array */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
+	int32 SlotIndex;
+
+	/** True when Character's Inventory is full */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
+	bool bCharacterInventoryFull;
+
 public:
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
@@ -253,11 +261,15 @@ public:
 	FORCEINLINE USoundCue* GetPickupSound() const { return PickupSound; }
 	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
+	FORCEINLINE int32 GetSlotIndex() const { return SlotIndex; }
+	FORCEINLINE void SetSlotIndex(int32 Index) { SlotIndex = Index; }
+	FORCEINLINE void SetCharacter(AShooterCharacter* Char) { ShooterCharacter = Char; }
+	FORCEINLINE void SetCharacterInventoryFull(bool bFull) { bCharacterInventoryFull = bFull; }
 
 	void SetItemState(EItemState State);
 
 	/** Called From AShooterCharacter class */
-	void StartItemCurve(AShooterCharacter* Char);
+	void StartItemCurve(AShooterCharacter* Char, bool bForcePlaySound = false);
 
 	/** Custom Depth Operations */
 	virtual void EnableCustomDepth();

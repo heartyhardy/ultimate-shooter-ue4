@@ -110,6 +110,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crouching", meta = (AllowPrivateAccess = "true"))
 	bool bCrouching;
 
+	/** Used to determine if the Character is Equipping */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crouching", meta = (AllowPrivateAccess = "true"))
+	bool bEquipping;
+
 	/** Change the recoil weight depending on turning-in-place or aiming */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float RecoilWeight;

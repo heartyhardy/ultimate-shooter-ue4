@@ -78,7 +78,9 @@ AShooterCharacter::AShooterCharacter() :
 	bShouldPlayEquipSound(true),
 	bShouldPlayPickupSound(true),
 	PickupSoundResetTime(0.2f),
-	EquipSoundResetTime(0.2f)
+	EquipSoundResetTime(0.2f),
+	// Icon animation
+	HighlightedSlot(-1)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -146,8 +148,13 @@ void AShooterCharacter::BeginPlay()
 	EquipWeapon(SpawnDefaultWeapon());
 	// Add the Default Weapon to the Inventory
 	Inventory.Add(EquippedWeapon);
+	EquippedWeapon->SetSlotIndex(0);
+
 	EquippedWeapon->DisableCustomDepth();
 	EquippedWeapon->DisableGlowMaterial();
+
+	// Set Character ref for the default Weapon
+	EquippedWeapon->SetCharacter(this);
 
 	// Initialize Ammo map
 	InitializeAmmoMap();
@@ -361,6 +368,99 @@ void AShooterCharacter::InitializeInterpLocations()
 
 	FInterpLocation InterpLoc6{ InterpComp6, 0 };
 	InterpLocations.Add(InterpLoc6);
+}
+
+void AShooterCharacter::FKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 0) return;
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 0);
+}
+
+void AShooterCharacter::OneKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 1) return;
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 1);
+}
+
+void AShooterCharacter::TwoKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 2) return;
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 2);
+}
+
+void AShooterCharacter::ThreeKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 3) return;
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 3);
+}
+
+void AShooterCharacter::FourKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 4) return;
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 4);
+}
+
+void AShooterCharacter::FiveKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 5) return;
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 5);
+}
+
+void AShooterCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, int32 NewItemIndex)
+{
+	const bool bCanExchangeItems = (CurrentItemIndex != NewItemIndex)
+		&& (NewItemIndex < Inventory.Num())
+		&& (CombatState == ECombatState::ECS_UnOccupied || CombatState == ECombatState::ECS_Equipping);
+
+	if (bCanExchangeItems)
+	{
+		auto OldEquippedWeapon = EquippedWeapon;
+		auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
+		EquipWeapon(NewWeapon);
+
+		OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
+		NewWeapon->SetItemState(EItemState::EIS_Equipped);
+
+		CombatState = ECombatState::ECS_Equipping;
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && EquipMontage)
+		{
+			AnimInstance->Montage_Play(EquipMontage, 1.0f);
+			AnimInstance->Montage_JumpToSection(FName(TEXT("Equip")));
+		}
+
+		NewWeapon->PlayEquipSound(true); // Force sound to play
+	}
+}
+
+int32 AShooterCharacter::GetEmptyInventorySlot()
+{
+	for (int32 i = 0; i < Inventory.Num(); i++)
+	{
+		if (Inventory[i] == nullptr)
+		{
+			return i;
+		}
+	}
+	if (Inventory.Num() < INVENTORY_CAPACITY)
+	{
+		return Inventory.Num();
+	}
+	return -1; //Inventory is full
+}
+
+void AShooterCharacter::HighlightInventorySlot()
+{
+	const int32 EmptySlot = GetEmptyInventorySlot();
+
+	HighlightIconDelegate.Broadcast(EmptySlot, true);
+	HighlightedSlot = EmptySlot;
+}
+
+void AShooterCharacter::UnHighlightInventorySlot()
+{
+	HighlightIconDelegate.Broadcast(HighlightedSlot, false);
+	HighlightedSlot = -1;
 }
 
 int32 AShooterCharacter::GetInterpLocationIndex()
@@ -646,10 +746,48 @@ void AShooterCharacter::TraceForItems()
 		{
 
 			TraceHitItem = Cast<AItem>(CrosshairTraceHit.Actor);
+			auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
+			
+			if (TraceHitWeapon)
+			{
+				if (HighlightedSlot == -1)
+				{
+					// Not currently highlighting  a slot: Highlight one
+					HighlightInventorySlot();
+				}
+			}
+			else
+			{
+				// Is a slot being highlighted
+				if (HighlightedSlot != -1)
+				{
+					// Unhighlight inventory slot
+					UnHighlightInventorySlot();
+				}
+			}
+
+			// Wont be able to Spam the SELECT key now
+			if (TraceHitItem && TraceHitItem->GetItemState() == EItemState::EIS_EquipInterping)
+			{
+				TraceHitItem = nullptr;
+			}
+
 			if (TraceHitItem && TraceHitItem->GetPickupWidget())
 			{
 				TraceHitItem->GetPickupWidget()->SetVisibility(true);
 				TraceHitItem->EnableCustomDepth();
+
+				if (Inventory.Num() >= INVENTORY_CAPACITY)
+				{
+					// Inventory is full
+					TraceHitItem->SetCharacterInventoryFull(true);
+				}
+				else
+				{
+					// Inventory has room
+					TraceHitItem->SetCharacterInventoryFull(false);
+				}
+
 			}
 
 			// If we hit an Item last frame
@@ -688,7 +826,7 @@ AWeapon* AShooterCharacter::SpawnDefaultWeapon()
 	return nullptr;
 }
 
-void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip, bool bSwapping)
 {
 	if (WeaponToEquip)
 	{
@@ -699,6 +837,17 @@ void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 		{
 			// Attach the given weapon to the socket
 			RightHandSocket->AttachActor(WeaponToEquip, GetMesh());
+		}
+
+		// Broadcast
+		if (!EquippedWeapon)
+		{
+			// -1 if no equipped weapon yet. No need to reverse the icon animation
+			EquipItemDelegate.Broadcast(-1, WeaponToEquip->GetSlotIndex());
+		}
+		else if (!bSwapping)
+		{
+			EquipItemDelegate.Broadcast(EquippedWeapon->GetSlotIndex(), WeaponToEquip->GetSlotIndex());
 		}
 
 		// Set the Given weapon as the Equipped weapon
@@ -722,8 +871,15 @@ void AShooterCharacter::DropWeapon()
 
 void AShooterCharacter::SwapWeapon(AWeapon* WeaponToSwap)
 {
+	// Check inventory is large enough to accomodate that index
+	if (Inventory.Num() - 1 >= EquippedWeapon->GetSlotIndex())
+	{
+		Inventory[EquippedWeapon->GetSlotIndex()] = WeaponToSwap;
+		WeaponToSwap->SetSlotIndex(EquippedWeapon->GetSlotIndex());
+	}
+
 	DropWeapon();
-	EquipWeapon(WeaponToSwap);
+	EquipWeapon(WeaponToSwap, true);
 	// Clear the Tracehitweapon and LastTracehit because we just equipped the item
 
 	TraceHitItem = nullptr;
@@ -733,9 +889,11 @@ void AShooterCharacter::SwapWeapon(AWeapon* WeaponToSwap)
 // Select Button E is pressed
 void AShooterCharacter::SelectButtonPressed()
 {
+	if (CombatState != ECombatState::ECS_UnOccupied) return;
 	if (TraceHitItem)
 	{
-		TraceHitItem->StartItemCurve(this);
+		TraceHitItem->StartItemCurve(this, true);
+		TraceHitItem = nullptr; // Prevent Spamming SELECT
 	}
 }
 
@@ -894,6 +1052,11 @@ void AShooterCharacter::FinishReloading()
 		}
 
 	}
+}
+
+void AShooterCharacter::FinishEquipping()
+{
+	CombatState = ECombatState::ECS_UnOccupied;
 }
 
 bool AShooterCharacter::CarryingAmmo()
@@ -1062,6 +1225,14 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	/** Bind Crouch Ctrl key to Input */
 	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &AShooterCharacter::CrouchButtonPressed);
 
+	/** Bind Inventory Keys */
+	PlayerInputComponent->BindAction("FKey", EInputEvent::IE_Pressed, this, &AShooterCharacter::FKeyPressed);
+	PlayerInputComponent->BindAction("1Key", EInputEvent::IE_Pressed, this, &AShooterCharacter::OneKeyPressed);
+	PlayerInputComponent->BindAction("2Key", EInputEvent::IE_Pressed, this, &AShooterCharacter::TwoKeyPressed);
+	PlayerInputComponent->BindAction("3Key", EInputEvent::IE_Pressed, this, &AShooterCharacter::ThreeKeyPressed);
+	PlayerInputComponent->BindAction("4Key", EInputEvent::IE_Pressed, this, &AShooterCharacter::FourKeyPressed);
+	PlayerInputComponent->BindAction("5Key", EInputEvent::IE_Pressed, this, &AShooterCharacter::FiveKeyPressed);
+
 }
 
 void AShooterCharacter::ResetPickupSoundTimer()
@@ -1122,7 +1293,9 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 	{
 		if (Inventory.Num() < INVENTORY_CAPACITY) // Got space in Inventory
 		{
+			PickedWeapon->SetSlotIndex(Inventory.Num());
 			Inventory.Add(PickedWeapon);
+			PickedWeapon->SetItemState(EItemState::EIS_PickedUp);
 		}
 		else // Inventory is full so swapping
 		{

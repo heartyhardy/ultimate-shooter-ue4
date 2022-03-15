@@ -399,6 +399,7 @@ void AItem::InitializeCustomDepth()
 	DisableCustomDepth();
 }
 
+// Called when Item is changed or moved in the world
 void AItem::OnConstruction(const FTransform& Transform)
 {
 	if (MaterialInstance)
@@ -408,6 +409,48 @@ void AItem::OnConstruction(const FTransform& Transform)
 	}
 
 	EnableGlowMaterial();
+
+	// Load the data in the Item Rarity Data Table
+	
+	// Path to the Item Rarity Data Table
+	FString RarityTablePath(TEXT("DataTable'/Game/_Game/DataTables/DT_ItemRarity.DT_ItemRarity'"));
+	UDataTable* RarityTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *RarityTablePath)); // * needed in front of RarityTable Path since its C Style String
+
+	if (RarityTableObject)
+	{
+		FItemRarityTable* RarityRow = nullptr;
+		switch (ItemRarity)
+		{
+		case EItemRarity::EWR_Damaged:
+			RarityRow = RarityTableObject->FindRow<FItemRarityTable>(FName("Damaged"), TEXT(""));
+			break;
+
+		case EItemRarity::EWR_Common:
+			RarityRow = RarityTableObject->FindRow<FItemRarityTable>(FName("Common"), TEXT(""));
+			break;
+
+		case EItemRarity::EWR_Uncommon:
+			RarityRow = RarityTableObject->FindRow<FItemRarityTable>(FName("Uncommon"), TEXT(""));
+			break;
+
+		case EItemRarity::EWR_Rare:
+			RarityRow = RarityTableObject->FindRow<FItemRarityTable>(FName("Rare"), TEXT(""));
+			break;
+
+		case EItemRarity::EWR_Legendary:
+			RarityRow = RarityTableObject->FindRow<FItemRarityTable>(FName("Legendary"), TEXT(""));
+			break;
+		}
+
+		if (RarityRow)
+		{
+			GlowColor = RarityRow->GlowColor;
+			LightColor = RarityRow->LightColor;
+			DarkColor = RarityRow->DarkColor;
+			NumberOfStars = RarityRow->NumberOfStars;
+			IconBackground = RarityRow->IconBackground;
+		}
+	}
 }
 
 void AItem::EnableGlowMaterial()

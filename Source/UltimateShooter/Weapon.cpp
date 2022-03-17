@@ -93,3 +93,54 @@ void AWeapon::StopFalling()
 	// Enable Glow Pulsing after throwing down the weapon
 	StartPulseTimer();
 }
+
+void AWeapon::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+	const FString WeaponTablePath{ TEXT("DataTable'/Game/_Game/DataTables/DT_Weapon.DT_Weapon'") };
+	UDataTable* WeaponTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *WeaponTablePath));
+
+	if (WeaponTableObject)
+	{
+		FWeaponDataTable* WeaponDataRow = nullptr;
+
+		switch (WeaponType)
+		{
+		case EWeaponType::EWT_SubmachineGun:
+			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("SubmachineGun"), TEXT(""));
+			break;
+
+		case EWeaponType::EWT_AssultRifle:
+			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("AssualtRifle"), TEXT(""));
+			break;
+		}
+
+		if (WeaponDataRow)
+		{
+			AmmoType = WeaponDataRow->AmmoType;
+			Ammo = WeaponDataRow->WeaponAmmo;
+			MagazineCapacity = WeaponDataRow->MagazineCapacity;
+			SetPickupSound(WeaponDataRow->PickupSound);
+			SetEquipSound(WeaponDataRow->EquipSound);
+			GetItemMesh()->SetSkeletalMesh(WeaponDataRow->ItemMesh);
+			SetItemName(WeaponDataRow->ItemName);
+			SetIconItem(WeaponDataRow->InventoryIcon);
+			SetAmmoIcon(WeaponDataRow->AmmoIcon);
+
+			SetMaterialInstance(WeaponDataRow->MaterialInstance);
+			PreviousMaterialIndex = GetMaterialIndex(); // Store prev Material Index
+			GetItemMesh()->SetMaterial(PreviousMaterialIndex, nullptr); // Clear Material
+			SetMaterialIndex(WeaponDataRow->MaterialIndex);
+		}
+
+		if (GetMaterialInstance())
+		{
+			SetDynamicMaterialInstance(UMaterialInstanceDynamic::Create(GetMaterialInstance(), this));
+			GetDynamicMaterialInstance()->SetVectorParameterValue(TEXT("Fresnel Color"), GetGlowColor());
+			GetItemMesh()->SetMaterial(GetMaterialIndex(), GetDynamicMaterialInstance());
+			EnableGlowMaterial();
+		}
+	}
+
+}

@@ -287,14 +287,6 @@ private:
 	/** Firing factor for the crosshair spread */
 	float CrosshairFiringFactor;
 
-	/** Randomized Sound cue reference for weapon fire. Using editanywhere and blueprintreadwrite to set it in the blueprint */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class USoundCue* FireSound;
-
-	/** Gun Muzzle Flash particle system. Attached to: BarrelSocket */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class UParticleSystem* MuzzleFlash;
-
 	/** Animation montage for Primary Weapon Fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* FireFromHipMontage;
@@ -317,9 +309,6 @@ private:
 	
 	/** Fire cooldown, waiting for timer tick */
 	bool bShouldAutoFire;
-
-	/** Rate of Auto-Fire */
-	float AutomaticFireRate;
 
 	/** Timer handle for automatic fire cooldown */
 	FTimerHandle AutoFireTimerHandle;

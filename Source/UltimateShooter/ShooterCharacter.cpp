@@ -53,7 +53,6 @@ AShooterCharacter::AShooterCharacter() :
 	// Auto Fire
 	bShouldAutoFire(true),
 	bAutoFireButtonPressed(false),
-	AutomaticFireRate(0.1f),
 	// Item Tracing
 	bShouldTraceForItems(false),
 	// Camera Interp Distances
@@ -663,13 +662,15 @@ void AShooterCharacter::AutoFireReleased()
 
 void AShooterCharacter::StartAutoFire()
 {
+	if (!EquippedWeapon) return;
+
 	CombatState = ECombatState::ECS_FireTimerInProgress;
 
 	GetWorldTimerManager().SetTimer(
 		AutoFireTimerHandle,
 		this,
 		&AShooterCharacter::ResetAutoFire,
-		AutomaticFireRate
+		EquippedWeapon->GetAutoFireRate()
 	);
 }
 
@@ -918,9 +919,9 @@ bool AShooterCharacter::WeaponHasAmmo()
 void AShooterCharacter::PlayFireSound()
 {
 	/** Play the sound cue */
-	if (FireSound)
+	if (EquippedWeapon->GetFireSound())
 	{
-		UGameplayStatics::PlaySound2D(this, FireSound);
+		UGameplayStatics::PlaySound2D(this, EquippedWeapon->GetFireSound());
 	}
 }
 
@@ -932,9 +933,9 @@ void AShooterCharacter::SendBullet()
 	{
 		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
 
-		if (MuzzleFlash)
+		if (EquippedWeapon->GetMuzzleFlash())
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFlash(), SocketTransform);
 		}
 
 		FVector BeamEndLocation;

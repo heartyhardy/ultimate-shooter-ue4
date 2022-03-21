@@ -292,7 +292,13 @@ void AShooterCharacter::FireWeapon()
 		/** Start Timer for crosshair spread factor when firing */
 		StartCrosshairFireTimer();
 		// Start Auto Fire
-		StartAutoFire();
+		StartAutoFire(); // Start Fire Timer
+
+		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Pistol)
+		{
+			//Start Moving Slide Timer
+			EquippedWeapon->StartSlideTimer();
+		}
 	}
 }
 

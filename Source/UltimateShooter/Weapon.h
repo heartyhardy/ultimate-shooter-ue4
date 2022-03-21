@@ -106,6 +106,10 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	void FinishMovingSlide();
+
+	void UpdateSlideDisplacement();
+
 private:
 	FTimerHandle ThrowWeaponTimer;
 	float ThrowWeaponTime;
@@ -173,6 +177,37 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (AllowPrivateAccess = "true"))
 	FName BoneToHide;
 
+	/** Amount of Pushback value when firing */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	float SlideDisplacement;
+
+	/** Curve for Slide Displacement */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* SlideDisplacementCurve;
+
+	/** Timer Handle For Updating Slide Displacement */
+	FTimerHandle SlideTimer;
+	
+	/** Time for displacing the slide during pistol fire */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	float SlideDisplacementTime;
+	
+	/** True when moving the Pistol Slide */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	bool bMovingSlide;
+
+	/** Maximum Slide Displacement length */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	float MaxSlideDisplacement;
+
+	/** Max Rotation for Pistol Recoil */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	float MaxRecoilRotation;
+
+	/** Amount of Pistol Roll rotation when firing */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
+	float RecoilRotation;
+
 public:
 	// Add impulse to the weapon
 	void ThrowWeapon();
@@ -201,6 +236,8 @@ public:
 	FORCEINLINE float GetAutoFireRate() const { return AutoFireRate; }
 	FORCEINLINE UParticleSystem* GetMuzzleFlash() const { return MuzzleFlash; }
 	FORCEINLINE USoundCue* GetFireSound() const { return FireSound; }
+
+	void StartSlideTimer();
 
 	bool ClipIsFull();
 };

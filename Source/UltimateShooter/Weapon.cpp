@@ -11,7 +11,12 @@ AWeapon::AWeapon() :
 	WeaponType(EWeaponType::EWT_SubmachineGun),
 	AmmoType(EAmmoType::EAT_9mm),
 	ReloadMontageSection(FName(TEXT("ReloadSMG"))),
-	ClipBoneName(TEXT("smg_clip"))
+	ClipBoneName(TEXT("smg_clip")),
+	SlideDisplacement(0.f),
+	SlideDisplacementTime(0.3f),
+	bMovingSlide(false),
+	MaxSlideDisplacement(6.0f),
+	MaxRecoilRotation(20.f)
 {
 	// This is a must for tick to work!
 	PrimaryActorTick.bCanEverTick = true;
@@ -27,6 +32,9 @@ void AWeapon::Tick(float DeltaTime)
 		const FRotator MeshRotation{ 0.f, GetItemMesh()->GetComponentRotation().Yaw, 0.f };
 		GetItemMesh()->SetWorldRotation(MeshRotation, false, nullptr, ETeleportType::TeleportPhysics);
 	}
+
+	// Update Slide on Pistol
+	UpdateSlideDisplacement();
 }
 
 void AWeapon::ThrowWeapon()
@@ -78,6 +86,12 @@ void AWeapon::ReloadAmmo(int32 Amount)
 {
 	checkf(Ammo + Amount <= MagazineCapacity, TEXT("Attempted to overreload the Mag Capacity!!"));
 	Ammo += Amount;
+}
+
+void AWeapon::StartSlideTimer()
+{
+	bMovingSlide = true;
+	GetWorldTimerManager().SetTimer(SlideTimer, this, &AWeapon::FinishMovingSlide, SlideDisplacementTime);
 }
 
 bool AWeapon::ClipIsFull()
@@ -168,5 +182,21 @@ void AWeapon::BeginPlay()
 	if (BoneToHide != FName(""))
 	{
 		GetItemMesh()->HideBoneByName(BoneToHide, EPhysBodyOp::PBO_None);
+	}
+}
+
+void AWeapon::FinishMovingSlide()
+{
+	bMovingSlide = false;
+}
+
+void AWeapon::UpdateSlideDisplacement()
+{
+	if (SlideDisplacementCurve && bMovingSlide)
+	{
+		const float ElapsedTime{ GetWorldTimerManager().GetTimerElapsed(SlideTimer) };
+		const float CurveValue{ SlideDisplacementCurve->GetFloatValue(ElapsedTime) };
+		SlideDisplacement = CurveValue * MaxSlideDisplacement;
+		RecoilRotation = CurveValue * MaxRecoilRotation;
 	}
 }

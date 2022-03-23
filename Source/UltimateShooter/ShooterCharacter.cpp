@@ -306,7 +306,7 @@ void AShooterCharacter::FireWeapon()
 void AShooterCharacter::StartAiming()
 {
 	bAimingButtonPressed = true;
-	if (CombatState != ECombatState::ECS_Reloading)
+	if (CombatState != ECombatState::ECS_Reloading && CombatState != ECombatState::ECS_Equipping)
 	{
 		Aim();
 	}
@@ -419,6 +419,11 @@ void AShooterCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, int32 New
 
 	if (bCanExchangeItems)
 	{
+		if (bAiming)
+		{
+			StopAiming();
+		}
+
 		auto OldEquippedWeapon = EquippedWeapon;
 		auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
 		EquipWeapon(NewWeapon);
@@ -683,10 +688,11 @@ void AShooterCharacter::StartAutoFire()
 void AShooterCharacter::ResetAutoFire()
 {
 	CombatState = ECombatState::ECS_UnOccupied;
+	if (!EquippedWeapon) return;
 
 	if (WeaponHasAmmo())
 	{
-		if (bAutoFireButtonPressed)
+		if (bAutoFireButtonPressed && EquippedWeapon->GetAutomatic())
 		{
 			FireWeapon();
 		}
@@ -1064,6 +1070,10 @@ void AShooterCharacter::FinishReloading()
 void AShooterCharacter::FinishEquipping()
 {
 	CombatState = ECombatState::ECS_UnOccupied;
+	if (bAimingButtonPressed)
+	{
+		Aim();
+	}
 }
 
 bool AShooterCharacter::CarryingAmmo()

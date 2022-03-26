@@ -11,6 +11,7 @@
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Components/WidgetComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
@@ -19,6 +20,7 @@
 #include "Item.h"
 #include "Weapon.h"
 #include "Ammo.h"
+#include "UltimateShooter.h"
 
 
 // Sets default values
@@ -465,6 +467,25 @@ void AShooterCharacter::HighlightInventorySlot()
 
 	HighlightIconDelegate.Broadcast(EmptySlot, true);
 	HighlightedSlot = EmptySlot;
+}
+
+EPhysicalSurface AShooterCharacter::GetSurfaceType()
+{
+	FHitResult HitResult;
+	const FVector Start{ GetActorLocation() };
+	const FVector End{ Start + FVector(0.f, 0.f, -400.f) };
+	FCollisionQueryParams QueryParams;
+	QueryParams.bReturnPhysicalMaterial = true;
+
+	GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		ECollisionChannel::ECC_Visibility,
+		QueryParams
+	);
+
+	return UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get()); // Get() Returns a smart pointer. This is a struct when deref
 }
 
 void AShooterCharacter::UnHighlightInventorySlot()

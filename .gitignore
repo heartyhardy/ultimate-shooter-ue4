@@ -77,7 +77,10 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 # Paragon Assets
+Content/ParagonProps/*
 Content/ParagonLtBelica/*
+Content/ParagonPhase/*
+Content/ParagonTwinblast/*
 
 #Other Assets
 Content/Audio/*
@@ -96,4 +99,3 @@ Content/AnimStarterPack/*
 Content/FPS_Weapon_Bundle/*
 Content/A_Surface_Footstep/*
 Content/KiteDemo/*
-Content/ParagonProps/*

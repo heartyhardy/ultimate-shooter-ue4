@@ -81,7 +81,7 @@ protected:
 	void MouseLookUpAtRate(float Rate);
 
 	/** Beam End Location depending on the Gun socket or Crosshairs */
-	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& BeamEndLocation);
+	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutHitResult);
 
 	/** Called when Fire Button is pressed */
 	void FireWeapon();

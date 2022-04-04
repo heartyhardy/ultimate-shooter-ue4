@@ -22,6 +22,7 @@
 #include "Ammo.h"
 #include "UltimateShooter.h"
 #include "BulletHitInterface.h"
+#include "Enemy.h"
 
 
 // Sets default values
@@ -997,6 +998,19 @@ void AShooterCharacter::SendBullet()
 							BeamHitResult.Location
 						);
 					}
+				}
+
+				// If Hit Actor is an Enemy
+				AEnemy* HitEnemy = Cast<AEnemy>(BeamHitResult.GetActor());
+				if (HitEnemy)
+				{
+					UGameplayStatics::ApplyDamage(
+						BeamHitResult.GetActor(),
+						EquippedWeapon->GetDamage(), // For now
+						GetController(),
+						this,
+						UDamageType::StaticClass()
+					);
 				}
 			}
 

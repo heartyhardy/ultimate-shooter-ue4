@@ -988,7 +988,6 @@ void AShooterCharacter::SendBullet()
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("WTF"));
 					/** Spawn Default Impact Particles */
 					if (ImpactParticles)
 					{
@@ -1004,13 +1003,29 @@ void AShooterCharacter::SendBullet()
 				AEnemy* HitEnemy = Cast<AEnemy>(BeamHitResult.GetActor());
 				if (HitEnemy)
 				{
-					UGameplayStatics::ApplyDamage(
-						BeamHitResult.GetActor(),
-						EquippedWeapon->GetDamage(), // For now
-						GetController(),
-						this,
-						UDamageType::StaticClass()
-					);
+					// Check Headshots
+					if (BeamHitResult.BoneName.ToString() == HitEnemy->GetHeadBone())
+					{
+						// Apply Headshot dmg
+						UGameplayStatics::ApplyDamage(
+							BeamHitResult.GetActor(),
+							EquippedWeapon->GetHeadshotDamage(), // For now
+							GetController(),
+							this,
+							UDamageType::StaticClass()
+						);
+					}
+					else
+					{
+						// Apply Bodyshot damage
+						UGameplayStatics::ApplyDamage(
+							BeamHitResult.GetActor(),
+							EquippedWeapon->GetDamage(), // For now
+							GetController(),
+							this,
+							UDamageType::StaticClass()
+						);
+					}
 				}
 			}
 

@@ -41,6 +41,46 @@ protected:
 
 	void UpdateHitNumbers();
 
+	/** Called when something overlaps with the Agro Sphere */
+	UFUNCTION()
+	void AgroSphereOverlap(
+		UPrimitiveComponent* OverlappedComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
+	UFUNCTION(BlueprintCallable)
+	void SetStunned(bool Stunned);
+
+	/** Called when something overlaps with the Combat Sphere */
+	UFUNCTION()
+	void CombatSphereOverlap(
+		UPrimitiveComponent* OverlappedComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
+	/** Called when overlaps ends for the Combat Sphere */
+	UFUNCTION()
+	void CombatSphereEndOverlap(
+		UPrimitiveComponent* OverlappedComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int OtherBodyIndex
+	);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayAttackMontage(FName Section, float PlayRate = 1.0f);
+
+	UFUNCTION(BlueprintPure) // Doesnt need an execution pin
+	FName GetAttackSectionName();
+
 private:
 
 	/** Particles to spawn when hit by player attacks */
@@ -93,6 +133,52 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float HitNumberDestroyTime;
 
+	/** Behavior tree for the AI Character */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true"))
+	class UBehaviorTree* BehaviorTree;
+
+	/** Point for enemy to move to */
+	/** When MakeEditWidget is enabled: Gives an edit widget in world to set it in editor using transform widgets */
+	/** Also note:  This FVector will be a local vector once MakeEditWidget is enabled*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
+	FVector PatrolPoint;
+
+	/** 2nd Point for enemy to move to */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
+	FVector PatrolPoint2;
+
+	class AEnemyController* EnemyController;
+	
+	/** Overlap sphere for when the enemy becomes hostile towards player */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* AgroSphere;
+
+	/** True when playing Hit Animation */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	bool bStunned;
+
+	/** Chance of being stunned 0 - no stun 1 - 100% chance */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	float StunChance;
+
+	/** True when In attack range */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	bool bInAttackRange;
+
+	/** Overlap sphere for attack range*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* CombatRangeSphere;
+
+	/** Montage containing different attack animations */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* AttackMontage;
+	
+	/** The four attack montage names */
+	FName AttackLFast;
+	FName AttackRFast;
+	FName AttackL;
+	FName AttackR;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -106,4 +192,6 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowHitNumber(int32 Damage, FVector HitLocation, bool bHeadShot);
+
+	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 };

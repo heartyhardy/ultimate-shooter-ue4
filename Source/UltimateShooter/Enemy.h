@@ -81,6 +81,41 @@ protected:
 	UFUNCTION(BlueprintPure) // Doesnt need an execution pin
 	FName GetAttackSectionName();
 
+	UFUNCTION()
+	void OnLeftWeaponOverlap(
+		UPrimitiveComponent* OverlappedComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
+	UFUNCTION()
+	void OnRightWeaponOverlap(
+		UPrimitiveComponent* OverlappedComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
+	/** Activate/DeActivate Weapon Collision */
+	UFUNCTION(BlueprintCallable)
+	void ActivateLeftWeapon();
+	
+	UFUNCTION(BlueprintCallable)
+	void DeActivateLeftWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	void ActivateRightWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	void DeActivateRightWeapon();
+
+	void DoDamage(AActor* Victim);
+
 private:
 
 	/** Particles to spawn when hit by player attacks */
@@ -178,6 +213,18 @@ private:
 	FName AttackRFast;
 	FName AttackL;
 	FName AttackR;
+
+	/** Collision Volume for the Left Weapon */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* LeftWeaponCollision;
+
+	/** Collision Volume for the Right Weapon */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* RightWeaponCollision;
+
+	/** Base damage of the enemy */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float BaseDamage;
 
 public:	
 	// Called every frame

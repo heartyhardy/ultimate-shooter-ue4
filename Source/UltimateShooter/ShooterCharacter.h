@@ -11,6 +11,7 @@ UENUM(BlueprintType)
 enum class ECombatState : uint8
 {
 	ECS_UnOccupied UMETA(DisplayName = "UnOccupied"),
+	ECS_Stunned UMETA(DisplayName = "Stunned"),
 	ECS_FireTimerInProgress UMETA(DisplayName = "FireTimerInProgress"),
 	ECS_Reloading UMETA(DisplayName = "Reloading"),
 	ECS_Equipping UMETA(DisplayName = "Equipping"),
@@ -212,6 +213,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	EPhysicalSurface GetSurfaceType();
+
+	UFUNCTION(BlueprintCallable)
+	void EndStun();
 	
 public:	
 	// Called every frame
@@ -492,6 +496,18 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class USoundCue* MeleeImpactSound;
 
+	/** Blood partles spawned on hit */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BloodParticles;
+	
+	/** Montage to play when character is hit */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* HitReactMontage;
+
+	/** Chance of being stunned when hit by an enemy */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float StunChance;
+
 public:
 
 	/** Returns Camera boom subobject **/
@@ -540,4 +556,9 @@ public:
 
 	FORCEINLINE AWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
 	FORCEINLINE USoundCue* GetMeleeImpactSound() const { return MeleeImpactSound; }
+	FORCEINLINE UParticleSystem* GetBloodParticles() const { return BloodParticles; }
+
+	void Stun();
+
+	FORCEINLINE float GetStunChance() const { return StunChance; }
 };

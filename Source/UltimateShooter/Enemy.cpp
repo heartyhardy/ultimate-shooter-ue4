@@ -13,6 +13,7 @@
 #include "ShooterCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "DrawDebugHelpers.h"
 
 // Sets default values
@@ -30,7 +31,9 @@ AEnemy::AEnemy():
 	AttackRFast(TEXT("AttackRFast")),
 	AttackL(TEXT("AttackL")),
 	AttackR(TEXT("AttackR")),
-	BaseDamage(20.f)
+	BaseDamage(20.f),
+	LeftWeaponSocket(TEXT("FX_Trail_L_02")),
+	RightWeaponSocket(TEXT("FX_Trail_R_02"))
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -303,12 +306,24 @@ FName AEnemy::GetAttackSectionName()
 
 void AEnemy::OnLeftWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	DoDamage(OtherActor);
+	auto Character = Cast<AShooterCharacter>(OtherActor);
+	if (Character)
+	{
+		DoDamage(Character);
+		SpawnBlood(Character, LeftWeaponSocket);
+		StunCharacter(Character);
+	}
 }
 
 void AEnemy::OnRightWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	DoDamage(OtherActor);
+	auto Character = Cast<AShooterCharacter>(OtherActor);
+	if (Character)
+	{
+		DoDamage(Character);
+		SpawnBlood(Character, RightWeaponSocket);
+		StunCharacter(Character);
+	}
 }
 
 void AEnemy::ActivateLeftWeapon()
@@ -331,28 +346,54 @@ void AEnemy::DeActivateRightWeapon()
 	RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void AEnemy::DoDamage(AActor* Victim)
+void AEnemy::DoDamage(AShooterCharacter* Victim)
 {
 	if (!Victim) return;
 
-	auto Character = Cast<AShooterCharacter>(Victim);
-	if (Character)
-	{
-		UGameplayStatics::ApplyDamage(
-			Character,
-			BaseDamage,
-			EnemyController,
-			this,
-			UDamageType::StaticClass()
-		);
+	UGameplayStatics::ApplyDamage(
+		Victim,
+		BaseDamage,
+		EnemyController,
+		this,
+		UDamageType::StaticClass()
+	);
 
-		if (Character->GetMeleeImpactSound())
+	if (Victim->GetMeleeImpactSound())
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			Victim->GetMeleeImpactSound(),
+			GetActorLocation()
+		);
+	}
+}
+
+void AEnemy::SpawnBlood(AShooterCharacter* Victim, FName SocketName)
+{
+	// Get Socket at the tip of the weapon(Left)
+	const USkeletalMeshSocket* TipSocket{ GetMesh()->GetSocketByName(SocketName) };
+	if (TipSocket)
+	{
+		const FTransform SocketTransform{ TipSocket->GetSocketTransform(GetMesh()) };
+		if (Victim->GetBloodParticles()) // Spawn Blood Particles
 		{
-			UGameplayStatics::PlaySoundAtLocation(
-				this,
-				Character->GetMeleeImpactSound(),
-				GetActorLocation()
+			UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				Victim->GetBloodParticles(),
+				SocketTransform
 			);
+		}
+	}
+}
+
+void AEnemy::StunCharacter(AShooterCharacter* Victim)
+{
+	if (Victim)
+	{
+		const float Stun{ FMath::FRandRange(0.f, 1.f) };
+		if (Stun <= Victim->GetStunChance())
+		{
+			Victim->Stun();
 		}
 	}
 }

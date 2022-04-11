@@ -86,7 +86,9 @@ AShooterCharacter::AShooterCharacter() :
 	HighlightedSlot(-1),
 	// Health
 	Health(100.f),
-	MaxHealth(100.f)
+	MaxHealth(100.f),
+	// Stun
+	StunChance(0.25f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -326,7 +328,7 @@ void AShooterCharacter::FireWeapon()
 void AShooterCharacter::StartAiming()
 {
 	bAimingButtonPressed = true;
-	if (CombatState != ECombatState::ECS_Reloading && CombatState != ECombatState::ECS_Equipping)
+	if (CombatState != ECombatState::ECS_Reloading && CombatState != ECombatState::ECS_Equipping && CombatState != ECombatState::ECS_Stunned)
 	{
 		Aim();
 	}
@@ -506,10 +508,31 @@ EPhysicalSurface AShooterCharacter::GetSurfaceType()
 	return UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get()); // Get() Returns a smart pointer. This is a struct when deref
 }
 
+void AShooterCharacter::EndStun()
+{
+	CombatState = ECombatState::ECS_UnOccupied;
+
+	if (bAimingButtonPressed)
+	{
+		Aim();
+	}
+}
+
 void AShooterCharacter::UnHighlightInventorySlot()
 {
 	HighlightIconDelegate.Broadcast(HighlightedSlot, false);
 	HighlightedSlot = -1;
+}
+
+void AShooterCharacter::Stun()
+{
+	CombatState = ECombatState::ECS_Stunned;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HitReactMontage)
+	{
+		AnimInstance->Montage_Play(HitReactMontage);
+	}
 }
 
 int32 AShooterCharacter::GetInterpLocationIndex()
@@ -726,6 +749,8 @@ void AShooterCharacter::StartAutoFire()
 
 void AShooterCharacter::ResetAutoFire()
 {
+	if (CombatState == ECombatState::ECS_Stunned) return;
+
 	CombatState = ECombatState::ECS_UnOccupied;
 	if (!EquippedWeapon) return;
 
@@ -1118,6 +1143,8 @@ void AShooterCharacter::ReloadWeapon()
 
 void AShooterCharacter::FinishReloading()
 {
+	if (CombatState == ECombatState::ECS_Stunned) return;
+
 	// Update Combat State
 	CombatState = ECombatState::ECS_UnOccupied;
 
@@ -1160,6 +1187,8 @@ void AShooterCharacter::FinishReloading()
 
 void AShooterCharacter::FinishEquipping()
 {
+	if (CombatState == ECombatState::ECS_Stunned) return;
+
 	CombatState = ECombatState::ECS_UnOccupied;
 	if (bAimingButtonPressed)
 	{

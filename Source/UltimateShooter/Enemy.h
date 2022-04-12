@@ -120,6 +120,8 @@ protected:
 	/** Attempt to Stun Character */ 
 	void StunCharacter(AShooterCharacter* Victim);
 
+	void ResetCanAttack();
+
 private:
 
 	/** Particles to spawn when hit by player attacks */
@@ -235,6 +237,21 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	FName RightWeaponSocket;
+
+	/** True when enemy can attack */
+	UPROPERTY(VisibleAnywhere, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	bool bCanAttack;
+
+	// Attack timer handle
+	FTimerHandle AttackWaitTimer;
+
+	/** Min time to wait before attacking again */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float AttackWaitTime;
+
+	/** Montage to play on Enemy Death */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DeathMontage;
 
 public:	
 	// Called every frame

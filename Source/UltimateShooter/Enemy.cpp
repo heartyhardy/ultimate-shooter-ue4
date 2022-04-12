@@ -33,7 +33,9 @@ AEnemy::AEnemy():
 	AttackR(TEXT("AttackR")),
 	BaseDamage(20.f),
 	LeftWeaponSocket(TEXT("FX_Trail_L_02")),
-	RightWeaponSocket(TEXT("FX_Trail_R_02"))
+	RightWeaponSocket(TEXT("FX_Trail_R_02")),
+	bCanAttack(true),
+	AttackWaitTime(1.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -85,6 +87,12 @@ void AEnemy::BeginPlay()
 	
 	// Get the AI controller
 	EnemyController = Cast<AEnemyController>(GetController());
+
+	// Set Attack Flag
+	if (EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("CanAttack"), true);
+	}
 
 	// Transform Local Vector: PatrolPoint to World Space Vector
 	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(
@@ -149,6 +157,19 @@ void AEnemy::ShowHealthBar_Implementation()
 void AEnemy::Die()
 {
 	HideHealthBar();
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(DeathMontage);
+	}
+
+	if (EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("Dead"), true);
+		// Also stop movement after Death
+		EnemyController->StopMovement();
+	}
 }
 
 void AEnemy::PlayHitMontage(FName Section, float PlayRate)
@@ -278,6 +299,17 @@ void AEnemy::PlayAttackMontage(FName Section, float PlayRate)
 		AnimInstance->Montage_Play(AttackMontage, PlayRate);
 		AnimInstance->Montage_JumpToSection(Section, AttackMontage);
 	}
+
+	bCanAttack = false;
+	GetWorldTimerManager().SetTimer(
+		AttackWaitTimer, 
+		this, 
+		&AEnemy::ResetCanAttack, 
+		AttackWaitTime);
+	if (EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("CanAttack"), false);
+	}
 }
 
 FName AEnemy::GetAttackSectionName()
@@ -398,6 +430,15 @@ void AEnemy::StunCharacter(AShooterCharacter* Victim)
 	}
 }
 
+void AEnemy::ResetCanAttack()
+{
+	bCanAttack = true;
+	if (EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("CanAttack"), true);
+	}
+}
+
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
@@ -450,6 +491,13 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	// Agro Enemy when hit
+	if (EnemyController)
+	{
+		// Setting this Key in blackboard so the enemy can chase!
+		EnemyController->GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), DamageCauser);
+	}
+
 	if (Health - DamageAmount <= 0.f)
 	{
 		Health = 0.f;

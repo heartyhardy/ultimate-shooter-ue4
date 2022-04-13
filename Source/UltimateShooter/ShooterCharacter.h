@@ -216,6 +216,13 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void EndStun();
+
+	void Die();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishDeath();
+
+	void NotifyCharacterDeathToEnemyBB(class AController* EventInstigator);
 	
 public:	
 	// Called every frame
@@ -507,6 +514,10 @@ private:
 	/** Chance of being stunned when hit by an enemy */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float StunChance;
+
+	/** Montage to play when character is dying */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DeathMontage;
 
 public:
 

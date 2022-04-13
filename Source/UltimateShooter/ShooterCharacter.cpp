@@ -23,6 +23,8 @@
 #include "UltimateShooter.h"
 #include "BulletHitInterface.h"
 #include "Enemy.h"
+#include "EnemyController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 
 // Sets default values
@@ -144,18 +146,49 @@ AShooterCharacter::AShooterCharacter() :
 	InterpComp6->SetupAttachment(GetFollowCamera());
 }
 
-	float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (Health - DamageAmount <= 0.f)
 	{
-		if (Health - DamageAmount <= 0.f)
-		{
-			Health = 0.f;
-		}
-		else
-		{
-			Health -= DamageAmount;
-		}
-		return DamageAmount;
+		Health = 0.f;
+		Die();
+		NotifyCharacterDeathToEnemyBB(EventInstigator);
 	}
+	else
+	{
+		Health -= DamageAmount;
+	}
+	return DamageAmount;
+}
+
+void AShooterCharacter::Die()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		// This code moved here from Finish Death
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+		if (PlayerController)
+		{
+			DisableInput(PlayerController);
+		}
+		AnimInstance->Montage_Play(DeathMontage);
+	}
+}
+
+void AShooterCharacter::FinishDeath()
+{
+	GetMesh()->bPauseAnims = true;
+}
+
+void AShooterCharacter::NotifyCharacterDeathToEnemyBB(AController* EventInstigator)
+{
+	auto EnemyController = Cast<AEnemyController>(EventInstigator);
+	if (EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("CharacterDead"), true);
+	}
+}
 
 	// Called when the game starts or when spawned
 void AShooterCharacter::BeginPlay()
@@ -526,6 +559,8 @@ void AShooterCharacter::UnHighlightInventorySlot()
 
 void AShooterCharacter::Stun()
 {
+	if (Health <= 0.f) return; // Don't play Stun montage if dying
+
 	CombatState = ECombatState::ECS_Stunned;
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();

@@ -17,7 +17,7 @@
 #include "DrawDebugHelpers.h"
 
 // Sets default values
-AEnemy::AEnemy(): 
+AEnemy::AEnemy() :
 	Health(100.f),
 	MaxHealth(100.f),
 	HealthBarDisplayTime(4.f),
@@ -35,7 +35,9 @@ AEnemy::AEnemy():
 	LeftWeaponSocket(TEXT("FX_Trail_L_02")),
 	RightWeaponSocket(TEXT("FX_Trail_R_02")),
 	bCanAttack(true),
-	AttackWaitTime(1.f)
+	AttackWaitTime(1.f),
+	bDying(false),
+	DeathTime(4.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -156,6 +158,10 @@ void AEnemy::ShowHealthBar_Implementation()
 
 void AEnemy::Die()
 {
+	if (bDying) return;
+	
+	bDying = true;
+
 	HideHealthBar();
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -439,6 +445,18 @@ void AEnemy::ResetCanAttack()
 	}
 }
 
+void AEnemy::FinishDeath()
+{
+	GetMesh()->bPauseAnims = true; // Pause all animations
+	GetWorldTimerManager().SetTimer(DeathTimer, this, &AEnemy::DestroyEnemy, DeathTime);
+}
+
+void AEnemy::DestroyEnemy()
+{
+	Destroy();
+	// You can perform other tasks here that comes after enemy death
+}
+
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
@@ -478,6 +496,8 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 	}
 	ShowHealthBar();
 	
+	if (bDying) return; // Early return if enemy is dying
+
 	// Determine if bullet hit stuns the enemy
 	
 	const float Stunned = FMath::FRandRange(0.f, 1.f);

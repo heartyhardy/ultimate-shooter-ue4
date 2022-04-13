@@ -122,6 +122,12 @@ protected:
 
 	void ResetCanAttack();
 
+	UFUNCTION(BlueprintCallable)
+	void FinishDeath();
+
+	UFUNCTION()
+	void DestroyEnemy();
+
 private:
 
 	/** Particles to spawn when hit by player attacks */
@@ -133,7 +139,7 @@ private:
 	class USoundCue* ImpactSound;
 
 	/** Current Health of the Enemey */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float Health;
 
 	/** Max Health of the Enemy */
@@ -252,6 +258,14 @@ private:
 	/** Montage to play on Enemy Death */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DeathMontage;
+
+	bool bDying;
+
+	FTimerHandle DeathTimer;
+
+	/** Time until enemy's corpse vanishes from the world */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float DeathTime;
 
 public:	
 	// Called every frame

@@ -164,14 +164,8 @@ float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 void AShooterCharacter::Die()
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance)
+	if (AnimInstance && DeathMontage)
 	{
-		// This code moved here from Finish Death
-		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-		if (PlayerController)
-		{
-			DisableInput(PlayerController);
-		}
 		AnimInstance->Montage_Play(DeathMontage);
 	}
 }
@@ -181,9 +175,19 @@ void AShooterCharacter::FinishDeath()
 	GetMesh()->bPauseAnims = true;
 }
 
+void AShooterCharacter::LockControls()
+{
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	if (PlayerController)
+	{
+		DisableInput(PlayerController);
+	}
+}
+
 void AShooterCharacter::NotifyCharacterDeathToEnemyBB(AController* EventInstigator)
 {
-	auto EnemyController = Cast<AEnemyController>(EventInstigator);
+	auto EnemyController = Cast<AEnemyController>(EventInstigator);	
+
 	if (EnemyController)
 	{
 		EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("CharacterDead"), true);
@@ -1060,7 +1064,7 @@ void AShooterCharacter::SendBullet()
 				IBulletHitInterface* BulletHitInterface = Cast<IBulletHitInterface>(BeamHitResult.GetActor());
 				if (BulletHitInterface)
 				{
-					BulletHitInterface->BulletHit_Implementation(BeamHitResult);
+					BulletHitInterface->BulletHit_Implementation(BeamHitResult, this, GetController());
 				}
 				else
 				{

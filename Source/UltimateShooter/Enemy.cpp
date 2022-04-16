@@ -248,10 +248,16 @@ void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 	if (!OtherActor) return;
 
 	auto Character = Cast<AShooterCharacter>(OtherActor);
-	if (Character && EnemyController)
+	if (Character)
 	{
-		// Set the value of the "Target" key
-		EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Character);
+		if (EnemyController)
+		{
+			if (EnemyController->GetBlackboardComponent())
+			{
+				// Set the value of the "Target" key
+				EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Character);
+			}
+		}
 	}
 }
 
@@ -472,7 +478,7 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void AEnemy::BulletHit_Implementation(FHitResult HitResult)
+void AEnemy::BulletHit_Implementation(FHitResult HitResult, AActor* Shooter, AController* ShooterController)
 {
 	// Do when linetrace of Player hits thie enemy
 	if (ImpactSound)
@@ -494,19 +500,6 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 			true
 		);
 	}
-	ShowHealthBar();
-	
-	if (bDying) return; // Early return if enemy is dying
-
-	// Determine if bullet hit stuns the enemy
-	
-	const float Stunned = FMath::FRandRange(0.f, 1.f);
-	if (Stunned <= StunChance)
-	{
-		// TODO: Implement all directions
-		PlayHitMontage(FName("HitReactFront"));
-		SetStunned(true);
-	}
 }
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -527,6 +520,21 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	{
 		Health -= DamageAmount;
 	}
+
+	if (bDying) return DamageAmount; // Early return if enemy is dying
+
+	ShowHealthBar();
+
+	// Determine if bullet hit stuns the enemy
+
+	const float Stunned = FMath::FRandRange(0.f, 1.f);
+	if (Stunned <= StunChance)
+	{
+		// TODO: Implement all directions
+		PlayHitMontage(FName("HitReactFront"));
+		SetStunned(true);
+	}
+
 	return DamageAmount;
 }
 

@@ -222,6 +222,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void FinishDeath();
 
+	UFUNCTION(BlueprintCallable)
+	void LockControls();
+
 	void NotifyCharacterDeathToEnemyBB(class AController* EventInstigator);
 	
 public:	

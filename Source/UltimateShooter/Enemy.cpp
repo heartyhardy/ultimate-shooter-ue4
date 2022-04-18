@@ -14,7 +14,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "DrawDebugHelpers.h"
+#include "Explosive.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AEnemy::AEnemy() :
@@ -37,7 +38,9 @@ AEnemy::AEnemy() :
 	bCanAttack(true),
 	AttackWaitTime(1.f),
 	bDying(false),
-	DeathTime(4.f)
+	DeathTime(4.f),
+	ExplosiveSlowMotionTime(1.25f),
+	bInExplosiveSlowMotion(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -106,24 +109,6 @@ void AEnemy::BeginPlay()
 	const FVector WorldPatrolPoint2 = UKismetMathLibrary::TransformLocation(
 		GetActorTransform(),
 		PatrolPoint2
-	);
-
-	DrawDebugSphere(
-		GetWorld(),
-		WorldPatrolPoint,
-		5.f,
-		12,
-		FColor::Red,
-		true
-	);
-
-	DrawDebugSphere(
-		GetWorld(),
-		WorldPatrolPoint2,
-		5.f,
-		12,
-		FColor::Red,
-		true
 	);
 
 	if (EnemyController)
@@ -459,8 +444,39 @@ void AEnemy::FinishDeath()
 
 void AEnemy::DestroyEnemy()
 {
+	// If Slow Motion for Explosives are active, Reset TimeDilation
+	if (bInExplosiveSlowMotion)
+	{
+		ResetExplosiveSlowMotion();
+	}
 	Destroy();
 	// You can perform other tasks here that comes after enemy death
+}
+
+void AEnemy::ApplyExplosiveSlowMotion(AActor* DamageCauser)
+{
+	if (bInExplosiveSlowMotion) return;
+
+	auto ExplosiveActor = Cast<AExplosive>(DamageCauser);
+	if (ExplosiveActor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EXPLOSIVE DAMAGE APPLIED!"));
+		bInExplosiveSlowMotion = true;
+		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.4f);
+		GetWorldTimerManager().SetTimer(
+			ExplosiveSlowMotionTimer,
+			this,
+			&ThisClass::ResetExplosiveSlowMotion,
+			ExplosiveSlowMotionTime
+		);
+	}
+}
+
+void AEnemy::ResetExplosiveSlowMotion()
+{
+	UE_LOG(LogTemp, Warning, TEXT("DYING FROM DELAYED EXPLOSION!"));
+	bInExplosiveSlowMotion = false;
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 }
 
 // Called every frame
@@ -514,7 +530,10 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	if (Health - DamageAmount <= 0.f)
 	{
 		Health = 0.f;
+		GetCharacterMovement()->MaxWalkSpeed = 0.f;
+		
 		Die();
+		ApplyExplosiveSlowMotion(DamageCauser);
 	}
 	else
 	{

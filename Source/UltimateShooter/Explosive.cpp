@@ -127,7 +127,7 @@ void AExplosive::Tick(float DeltaTime)
 
 void AExplosive::DelayedExplosion(FHitResult HitResult, AActor* Shooter, AController* ShooterController, AActor* DamagedActor, AActor* ExplosiveActor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("HELLO MOFO!"));
+
 	// Do when linetrace of Player hits thie enemy
 	if (ImpactSound)
 	{
@@ -152,7 +152,7 @@ void AExplosive::DelayedExplosion(FHitResult HitResult, AActor* Shooter, AContro
 		DamagedActor,
 		Damage,
 		ShooterController,
-		Shooter,
+		this, // This has changed from Actor to Explosive
 		UDamageType::StaticClass()
 	);
 

@@ -90,7 +90,9 @@ AShooterCharacter::AShooterCharacter() :
 	Health(100.f),
 	MaxHealth(100.f),
 	// Stun
-	StunChance(0.25f)
+	StunChance(0.25f),
+	// Pain Sounds
+	PainThreshold(25.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -106,6 +108,11 @@ AShooterCharacter::AShooterCharacter() :
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Follow Camera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach it to the end of the Spring arm
 	FollowCamera->bUsePawnControlRotation = false; // Follow Rotation of the Camera Boom instead
+
+	/** Create a Vanity Camera and setup: Vanity Camera Boom controls it **/
+	VanityCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Vanity Camera"));
+	VanityCamera->SetupAttachment(GetMesh()); // Attach it to the end of the Spring arm
+	VanityCamera->bUsePawnControlRotation = false; // Follow Rotation of the Camera Boom instead
 
 	/** Disable Character rotation when Controller rotates. Let the Controller only affect the Camera */
 	bUseControllerRotationPitch = false;
@@ -148,6 +155,15 @@ AShooterCharacter::AShooterCharacter() :
 
 float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	// If Emoting Cancel it
+	if (bGeneralEmoting)
+	{
+		EndGeneralEmote();
+		UnLockControls();
+	}
+
+	// Play Pain Sound
+
 	if (Health - DamageAmount <= 0.f)
 	{
 		Health = 0.f;
@@ -157,6 +173,7 @@ float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	else
 	{
 		Health -= DamageAmount;
+		PlayPainSound(DamageAmount, PainThreshold);
 	}
 	return DamageAmount;
 }
@@ -167,6 +184,11 @@ void AShooterCharacter::Die()
 	if (AnimInstance && DeathMontage)
 	{
 		AnimInstance->Montage_Play(DeathMontage);
+
+		if (DeathSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation());
+		}
 	}
 }
 
@@ -184,6 +206,15 @@ void AShooterCharacter::LockControls()
 	}
 }
 
+void AShooterCharacter::UnLockControls()
+{
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	if (PlayerController)
+	{
+		EnableInput(PlayerController);
+	}
+}
+
 void AShooterCharacter::NotifyCharacterDeathToEnemyBB(AController* EventInstigator)
 {
 	auto EnemyController = Cast<AEnemyController>(EventInstigator);	
@@ -191,6 +222,42 @@ void AShooterCharacter::NotifyCharacterDeathToEnemyBB(AController* EventInstigat
 	if (EnemyController)
 	{
 		EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("CharacterDead"), true);
+	}
+}
+
+void AShooterCharacter::EmoteGeneralPressed()
+{
+	if (CombatState != ECombatState::ECS_UnOccupied) return;
+
+	if (!bGeneralEmoting)
+	{
+
+		FollowCamera->SetActive(false);
+		VanityCamera->SetActive(true);
+
+		bGeneralEmoting = true;
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && EmoteGeneralMontage)
+		{
+			AnimInstance->Montage_Play(EmoteGeneralMontage);
+		}
+	}
+}
+
+void AShooterCharacter::EndGeneralEmote()
+{
+	bGeneralEmoting = false;
+	VanityCamera->SetActive(false);
+	FollowCamera->SetActive(true);
+}
+
+void AShooterCharacter::PlayPainSound(float DamageTaken, float HeavyPainThreshold)
+{
+	if (PainSound && HeavyPainSound)
+	{
+		DamageTaken > HeavyPainThreshold ?
+			UGameplayStatics::PlaySoundAtLocation(this, HeavyPainSound, GetActorLocation()) :
+			UGameplayStatics::PlaySoundAtLocation(this, PainSound, GetActorLocation());
 	}
 }
 
@@ -564,6 +631,7 @@ void AShooterCharacter::UnHighlightInventorySlot()
 void AShooterCharacter::Stun()
 {
 	if (Health <= 0.f) return; // Don't play Stun montage if dying
+	if (bGeneralEmoting) return; // Prevents AMTG_Emote being cancelled
 
 	CombatState = ECombatState::ECS_Stunned;
 
@@ -1409,6 +1477,8 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("4Key", EInputEvent::IE_Pressed, this, &AShooterCharacter::FourKeyPressed);
 	PlayerInputComponent->BindAction("5Key", EInputEvent::IE_Pressed, this, &AShooterCharacter::FiveKeyPressed);
 
+	/** Emote */
+	PlayerInputComponent->BindAction("Emote", EInputEvent::IE_Pressed, this, &AShooterCharacter::EmoteGeneralPressed);
 }
 
 void AShooterCharacter::ResetPickupSoundTimer()

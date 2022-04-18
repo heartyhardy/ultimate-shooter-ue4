@@ -128,6 +128,12 @@ protected:
 	UFUNCTION()
 	void DestroyEnemy();
 
+	/** Explosive Delyed blast Slow Motion*/
+	void ApplyExplosiveSlowMotion(AActor* DamageCauser);
+
+	/** Explosive Delayed Blast slow motion reset */
+	void ResetExplosiveSlowMotion();
+
 private:
 
 	/** Particles to spawn when hit by player attacks */
@@ -266,6 +272,14 @@ private:
 	/** Time until enemy's corpse vanishes from the world */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float DeathTime;
+
+	FTimerHandle ExplosiveSlowMotionTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float ExplosiveSlowMotionTime;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	bool bInExplosiveSlowMotion;
 
 public:	
 	// Called every frame

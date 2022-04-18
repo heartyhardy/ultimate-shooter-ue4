@@ -225,8 +225,18 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void LockControls();
 
+	UFUNCTION(BlueprintCallable)
+	void UnLockControls();
+
 	void NotifyCharacterDeathToEnemyBB(class AController* EventInstigator);
-	
+
+	void EmoteGeneralPressed();
+
+	UFUNCTION(BlueprintCallable)
+	void EndGeneralEmote();
+
+	void PlayPainSound(float DamageTaken, float HeavyPainThreshold);
+		
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -243,6 +253,10 @@ private:
 	/** Camera that follows the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	/** Camera (Vanity Mode) Used in emotes */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* VanityCamera;
 
 	/** Base turn rate in degrees per second. Other scaling may affect the final turn rate */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -506,6 +520,22 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class USoundCue* MeleeImpactSound;
 
+	/** Sound to play when taking damage */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USoundCue* PainSound;
+
+	/** Sound to play when taking heavy damage */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USoundCue* HeavyPainSound;
+
+	/** Normal to Heavy damage threshold. Anything above this threshold will result in playing HeavyPain sound cue */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float PainThreshold;
+
+	/** Sound to play when Character is dying*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USoundCue* DeathSound;
+
 	/** Blood partles spawned on hit */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BloodParticles;
@@ -521,6 +551,12 @@ private:
 	/** Montage to play when character is dying */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DeathMontage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Emote, meta = (AllowPrivateAccess = "true"))
+	bool bGeneralEmoting;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Emote, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* EmoteGeneralMontage;
 
 public:
 
@@ -575,4 +611,6 @@ public:
 	void Stun();
 
 	FORCEINLINE float GetStunChance() const { return StunChance; }
+
+	FORCEINLINE bool GetGeneralEmoting() const { return bGeneralEmoting; }
 };

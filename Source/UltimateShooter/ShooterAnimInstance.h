@@ -130,4 +130,7 @@ private:
 	/** True when not reloading or equipping */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	bool bShouldUseFABRIK;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Emote, meta = (AllowPrivateAccess = "true"))
+	bool bGeneralEmoting;
 };

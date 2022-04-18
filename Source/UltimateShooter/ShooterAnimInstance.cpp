@@ -48,6 +48,7 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 	{
 		
 		bCrouching = ShooterCharacter->GetCrouching();
+		bGeneralEmoting = ShooterCharacter->GetGeneralEmoting();
 		bReloading = ShooterCharacter->GetCombatState() == ECombatState::ECS_Reloading;
 		bEquipping = ShooterCharacter->GetCombatState() == ECombatState::ECS_Equipping;
 		bShouldUseFABRIK = ShooterCharacter->GetCombatState() == ECombatState::ECS_FireTimerInProgress || ShooterCharacter->GetCombatState() == ECombatState::ECS_UnOccupied;

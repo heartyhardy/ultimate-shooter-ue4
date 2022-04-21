@@ -16,6 +16,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Explosive.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Camera/CameraComponent.h"
 
 // Sets default values
 AEnemy::AEnemy() :
@@ -89,7 +90,7 @@ void AEnemy::BeginPlay()
 	// Ignore the camera when attacking for mesh and capsule
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-	
+
 	// Get the AI controller
 	EnemyController = Cast<AEnemyController>(GetController());
 
@@ -460,9 +461,16 @@ void AEnemy::ApplyExplosiveSlowMotion(AActor* DamageCauser)
 	auto ExplosiveActor = Cast<AExplosive>(DamageCauser);
 	if (ExplosiveActor)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("EXPLOSIVE DAMAGE APPLIED!"));
 		bInExplosiveSlowMotion = true;
-		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.4f);
+
+		auto Shooter = Cast<AShooterCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+		if (Shooter)
+		{
+			Shooter->SetSceneFringe(3.0f);
+			Shooter->SetSceneVignette(1.5f);
+		}
+
+		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.3f);
 		GetWorldTimerManager().SetTimer(
 			ExplosiveSlowMotionTimer,
 			this,
@@ -474,9 +482,15 @@ void AEnemy::ApplyExplosiveSlowMotion(AActor* DamageCauser)
 
 void AEnemy::ResetExplosiveSlowMotion()
 {
-	UE_LOG(LogTemp, Warning, TEXT("DYING FROM DELAYED EXPLOSION!"));
 	bInExplosiveSlowMotion = false;
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+
+	auto Shooter = Cast<AShooterCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+	if (Shooter)
+	{
+		Shooter->SetSceneFringe(3.f, false);
+		Shooter->SetSceneVignette(1.5f, false);
+	}
 }
 
 // Called every frame
@@ -532,8 +546,8 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 		Health = 0.f;
 		GetCharacterMovement()->MaxWalkSpeed = 0.f;
 		
-		Die();
 		ApplyExplosiveSlowMotion(DamageCauser);
+		Die();
 	}
 	else
 	{

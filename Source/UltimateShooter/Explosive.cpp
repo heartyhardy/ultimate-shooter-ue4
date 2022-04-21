@@ -15,7 +15,7 @@
 AExplosive::AExplosive() :
 	Damage(100.f),
 	ExplosionDelay(1.f),
-	ChainExplosionDelay(0.5f)
+	ChainExplosionDelay(0.1f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -88,6 +88,7 @@ void AExplosive::BulletHit_Implementation(FHitResult HitResult, AActor* Shooter,
 
 			for (auto ExplodingActor : OverlappingExplodingActors)
 			{
+				if (!ExplodingActor || !ExplosiveActor) continue;
 
 				FTimerHandle ExplosionTimer;
 				FTimerDelegate DelayedExplosionDelegate;
@@ -127,7 +128,6 @@ void AExplosive::Tick(float DeltaTime)
 
 void AExplosive::DelayedExplosion(FHitResult HitResult, AActor* Shooter, AController* ShooterController, AActor* DamagedActor, AActor* ExplosiveActor)
 {
-
 	// Do when linetrace of Player hits thie enemy
 	if (ImpactSound)
 	{
@@ -143,18 +143,22 @@ void AExplosive::DelayedExplosion(FHitResult HitResult, AActor* Shooter, AContro
 		UGameplayStatics::SpawnEmitterAtLocation(
 			GetWorld(),
 			ExplodeParticles,
-			HitResult.Location,
+			GetActorLocation(),//HitResult.Location,
 			FRotator(0.f),
 			true
 		);
 	}
-	UGameplayStatics::ApplyDamage(
-		DamagedActor,
-		Damage,
-		ShooterController,
-		this, // This has changed from Actor to Explosive
-		UDamageType::StaticClass()
-	);
+
+	if (DamagedActor && this)
+	{
+		UGameplayStatics::ApplyDamage(
+			DamagedActor,
+			Damage,
+			ShooterController,
+			this, // This has changed from Actor to Explosive
+			UDamageType::StaticClass()
+		);
+	}
 
 	ExplosiveActor->Destroy();
 }

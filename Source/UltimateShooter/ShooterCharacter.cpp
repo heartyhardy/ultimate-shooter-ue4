@@ -92,7 +92,14 @@ AShooterCharacter::AShooterCharacter() :
 	// Stun
 	StunChance(0.25f),
 	// Pain Sounds
-	PainThreshold(25.f)
+	PainThreshold(25.f),
+	// Slow Motion Effects
+	DefaultSceneFringe(0.f),
+	CurrentSceneFringe(0.f),
+	SlowMotionSceneFringe(2.f),
+	DefaultSceneVignette(0.f),
+	CurrentSceneVignette(0.f),
+	SlowMotionSceneVignette(1.5f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -258,6 +265,54 @@ void AShooterCharacter::PlayPainSound(float DamageTaken, float HeavyPainThreshol
 		DamageTaken > HeavyPainThreshold ?
 			UGameplayStatics::PlaySoundAtLocation(this, HeavyPainSound, GetActorLocation()) :
 			UGameplayStatics::PlaySoundAtLocation(this, PainSound, GetActorLocation());
+	}
+}
+
+void AShooterCharacter::InterpSlowMoPostProcessEffects(float DeltaTime)
+{
+	/** Set Camera FOV */
+	if (bSlowMotion)
+	{
+		CurrentSceneFringe = FMath::FInterpTo(
+			CurrentSceneFringe,
+			SlowMotionSceneFringe,
+			DeltaTime,
+			10.0f
+		);
+
+		CurrentSceneVignette = FMath::FInterpTo(
+			CurrentSceneVignette,
+			SlowMotionSceneVignette,
+			DeltaTime,
+			10.f
+		);
+
+		GetFollowCamera()->PostProcessSettings.SceneFringeIntensity = CurrentSceneFringe;
+		GetFollowCamera()->PostProcessSettings.VignetteIntensity = CurrentSceneVignette;
+
+	}
+	else if (!bSlowMotion && CurrentSceneFringe > 0.f)
+	{
+		CurrentSceneFringe = FMath::FInterpTo(
+			CurrentSceneFringe,
+			DefaultSceneFringe,
+			DeltaTime,
+			2.0f
+		);
+
+		CurrentSceneVignette = FMath::FInterpTo(
+			CurrentSceneVignette,
+			DefaultSceneVignette,
+			DeltaTime,
+			10.f
+		);
+
+		GetFollowCamera()->PostProcessSettings.SceneFringeIntensity = CurrentSceneFringe;
+		GetFollowCamera()->PostProcessSettings.VignetteIntensity = CurrentSceneVignette;
+	}
+	else {
+		CurrentSceneFringe = 0.f;
+		CurrentSceneVignette = 0.f;
 	}
 }
 
@@ -640,6 +695,33 @@ void AShooterCharacter::Stun()
 	{
 		AnimInstance->Montage_Play(HitReactMontage);
 	}
+}
+
+void AShooterCharacter::SetSceneFringe(float Amount, bool bOverride)
+{
+	bSlowMotion = bOverride;
+
+	if (!bOverride)
+	{
+		SlowMotionSceneFringe = Amount;
+	}
+
+	if (!bOverride && CurrentSceneFringe > 0.1f) return;
+
+	GetFollowCamera()->PostProcessSettings.bOverride_SceneFringeIntensity = bOverride;
+}
+
+void AShooterCharacter::SetSceneVignette(float Amount, bool bOverride)
+{
+	bSlowMotion = bOverride;
+
+	if (!bOverride)
+	{
+		SlowMotionSceneVignette = Amount;
+	}
+
+	if (!bOverride && CurrentSceneVignette > 0.1f) return;
+	GetFollowCamera()->PostProcessSettings.bOverride_VignetteIntensity = bOverride;
 }
 
 int32 AShooterCharacter::GetInterpLocationIndex()
@@ -1409,6 +1491,8 @@ void AShooterCharacter::InterpCapsuleHalfHeight(float DeltaTime)
 void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	InterpSlowMoPostProcessEffects(DeltaTime);
 
 	/** Handle Camera Zoom Interpolation when Aiming */
 	InterpCameraZoom(DeltaTime);

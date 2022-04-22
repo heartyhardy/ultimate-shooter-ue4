@@ -89,25 +89,13 @@ void AExplosive::BulletHit_Implementation(FHitResult HitResult, AActor* Shooter,
 			for (auto ExplodingActor : OverlappingExplodingActors)
 			{
 				if (!ExplodingActor || !ExplosiveActor) continue;
-
-				FTimerHandle ExplosionTimer;
-				FTimerDelegate DelayedExplosionDelegate;
-
-				DelayedExplosionDelegate.BindUFunction(
-					ExplosiveActor, 
-					FName("DelayedExplosion"), 
+				FuseExplosive(
 					HitResult,
 					Shooter,
 					ShooterController,
 					ExplodingActor,
-					ExplosiveActor
-				);
-
-				GetWorld()->GetTimerManager().SetTimer(
-					ExplosionTimer,
-					DelayedExplosionDelegate,
-					BlastDelay,
-					false
+					ExplosiveActor,
+					BlastDelay
 				);
 
 				BlastDelay += ChainExplosionDelay;
@@ -161,5 +149,29 @@ void AExplosive::DelayedExplosion(FHitResult HitResult, AActor* Shooter, AContro
 	}
 
 	ExplosiveActor->Destroy();
+}
+
+void AExplosive::FuseExplosive(FHitResult HitResult, AActor* Shooter, AController* ShooterController, AActor* DamagedActor, AActor* ExplosiveActor, float BlastDelay)
+{
+
+	FTimerHandle ExplosionTimer;
+	FTimerDelegate DelayedExplosionDelegate;
+
+	DelayedExplosionDelegate.BindUFunction(
+		ExplosiveActor,
+		FName("DelayedExplosion"),
+		HitResult,
+		Shooter,
+		ShooterController,
+		DamagedActor,
+		ExplosiveActor
+	);
+
+	GetWorld()->GetTimerManager().SetTimer(
+		ExplosionTimer,
+		DelayedExplosionDelegate,
+		FMath::FRandRange(0.2f, 1.f),
+		false
+	);
 }
 

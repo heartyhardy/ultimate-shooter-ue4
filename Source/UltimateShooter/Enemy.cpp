@@ -154,6 +154,11 @@ void AEnemy::Die()
 	if (AnimInstance)
 	{
 		AnimInstance->Montage_Play(DeathMontage);
+		
+		if (DeathSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
+		}
 	}
 
 	if (EnemyController)

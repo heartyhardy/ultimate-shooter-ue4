@@ -89,6 +89,9 @@ AShooterCharacter::AShooterCharacter() :
 	// Health
 	Health(100.f),
 	MaxHealth(100.f),
+	// Armor
+	Armor(100.f),
+	MaxArmor(100.f),
 	// Stun
 	StunChance(0.25f),
 	// Pain Sounds
@@ -169,20 +172,30 @@ float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 		UnLockControls();
 	}
 
-	// Play Pain Sound
-
-	if (Health - DamageAmount <= 0.f)
+	// See if armor reduction applies
+	if (CanReduceFromArmor(DamageAmount))
 	{
-		Health = 0.f;
-		Die();
-		NotifyCharacterDeathToEnemyBB(EventInstigator);
+		Armor -= DamageAmount;
+		return 0.f;
 	}
 	else
 	{
-		Health -= DamageAmount;
-		PlayPainSound(DamageAmount, PainThreshold);
+		float ActualDamage =  GetDamageAfterArmorDeduction(DamageAmount);
+		Armor = 0.f;
+
+		if (Health - ActualDamage <= 0.f)
+		{
+			Health = 0.f;
+			Die();
+			NotifyCharacterDeathToEnemyBB(EventInstigator);
+		}
+		else
+		{
+			Health -= ActualDamage;
+			PlayPainSound(ActualDamage, PainThreshold);
+		}
+		return ActualDamage;
 	}
-	return DamageAmount;
 }
 
 void AShooterCharacter::Die()
@@ -314,6 +327,16 @@ void AShooterCharacter::InterpSlowMoPostProcessEffects(float DeltaTime)
 		CurrentSceneFringe = 0.f;
 		CurrentSceneVignette = 0.f;
 	}
+}
+
+bool AShooterCharacter::CanReduceFromArmor(float DamageAmount) const
+{
+	return Armor - DamageAmount >= 0.f ? true : false;
+}
+
+float AShooterCharacter::GetDamageAfterArmorDeduction(float DamageAmount) const
+{
+	return FMath::Abs(Armor - DamageAmount);
 }
 
 	// Called when the game starts or when spawned

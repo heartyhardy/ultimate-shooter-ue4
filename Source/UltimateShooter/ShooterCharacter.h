@@ -239,6 +239,11 @@ protected:
 
 	void InterpSlowMoPostProcessEffects(float DeltaTime);
 
+	/** Armor Related */
+	bool CanReduceFromArmor(float DamageAmount) const;
+
+	float GetDamageAfterArmorDeduction(float DamageAmount) const;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -517,6 +522,12 @@ private:
 	/** Character Max Health */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		float MaxHealth;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float Armor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float MaxArmor;
 
 	/** Sound to play when character gets hit by a melee attack */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))

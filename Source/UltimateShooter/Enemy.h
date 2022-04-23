@@ -278,11 +278,13 @@ private:
 
 	FTimerHandle ExplosiveSlowMotionTimer;
 
+	/** Explosion Slow-Mo persisntant time */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float ExplosiveSlowMotionTime;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bInExplosiveSlowMotion;
+
 
 public:	
 	// Called every frame

@@ -235,7 +235,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		void EndGeneralEmote();
 
-	void PlayPainSound(float DamageTaken, float HeavyPainThreshold);
+	void PlayPainSound(float DamageTaken, float HeavyPainThreshold) const;
 
 	void InterpSlowMoPostProcessEffects(float DeltaTime);
 

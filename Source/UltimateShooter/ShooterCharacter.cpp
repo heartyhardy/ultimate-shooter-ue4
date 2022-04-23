@@ -258,7 +258,7 @@ void AShooterCharacter::EndGeneralEmote()
 	FollowCamera->SetActive(true);
 }
 
-void AShooterCharacter::PlayPainSound(float DamageTaken, float HeavyPainThreshold)
+void AShooterCharacter::PlayPainSound(float DamageTaken, float HeavyPainThreshold) const
 {
 	if (PainSound && HeavyPainSound)
 	{

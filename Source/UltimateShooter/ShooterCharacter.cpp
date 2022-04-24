@@ -176,6 +176,7 @@ float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	if (CanReduceFromArmor(DamageAmount))
 	{
 		Armor -= DamageAmount;
+		PlayArmorRicochetSound();
 		return 0.f;
 	}
 	else
@@ -337,6 +338,18 @@ bool AShooterCharacter::CanReduceFromArmor(float DamageAmount) const
 float AShooterCharacter::GetDamageAfterArmorDeduction(float DamageAmount) const
 {
 	return FMath::Abs(Armor - DamageAmount);
+}
+
+void AShooterCharacter::PlayArmorRicochetSound() const
+{
+	if (ArmorRicochetSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			ArmorRicochetSound,
+			GetActorLocation()
+		);
+	}
 }
 
 	// Called when the game starts or when spawned

@@ -344,7 +344,10 @@ void AEnemy::OnLeftWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	auto Character = Cast<AShooterCharacter>(OtherActor);
 	if (Character)
 	{
-		DoDamage(Character);
+		float AbsoluteDamage = DoDamage(Character);		
+		if (AbsoluteDamage <= 0.f) return;
+		// TODO: Spawn Armor Negate Effect VFX
+
 		SpawnBlood(Character, LeftWeaponSocket);
 		StunCharacter(Character);
 	}
@@ -355,7 +358,10 @@ void AEnemy::OnRightWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 	auto Character = Cast<AShooterCharacter>(OtherActor);
 	if (Character)
 	{
-		DoDamage(Character);
+		float AbsoluteDamage = DoDamage(Character);
+		if (AbsoluteDamage <= 0.f) return;
+		// TODO: Spawn Armor Negate Effect VFX
+
 		SpawnBlood(Character, RightWeaponSocket);
 		StunCharacter(Character);
 	}
@@ -381,11 +387,11 @@ void AEnemy::DeActivateRightWeapon()
 	RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void AEnemy::DoDamage(AShooterCharacter* Victim)
+float AEnemy::DoDamage(AShooterCharacter* Victim)
 {
-	if (!Victim) return;
+	if (!Victim) return 0.f;
 
-	UGameplayStatics::ApplyDamage(
+	const float AbsoluteDamage = UGameplayStatics::ApplyDamage(
 		Victim,
 		BaseDamage,
 		EnemyController,
@@ -401,6 +407,8 @@ void AEnemy::DoDamage(AShooterCharacter* Victim)
 			GetActorLocation()
 		);
 	}
+
+	return AbsoluteDamage;
 }
 
 void AEnemy::SpawnBlood(AShooterCharacter* Victim, FName SocketName)

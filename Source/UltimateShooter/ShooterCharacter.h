@@ -244,6 +244,8 @@ protected:
 
 	float GetDamageAfterArmorDeduction(float DamageAmount) const;
 
+	void PlayArmorRicochetSound() const;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -529,9 +531,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float MaxArmor;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class USoundCue* ArmorRicochetSound;
+
 	/** Sound to play when character gets hit by a melee attack */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		class USoundCue* MeleeImpactSound;
+		USoundCue* MeleeImpactSound;
 
 	/** Sound to play when taking damage */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))

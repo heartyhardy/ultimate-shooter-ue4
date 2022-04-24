@@ -114,7 +114,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void DeActivateRightWeapon();
 
-	void DoDamage(class AShooterCharacter* Victim);
+	float DoDamage(class AShooterCharacter* Victim);
 	void SpawnBlood(AShooterCharacter* Victim, FName SocketName);
 
 	/** Attempt to Stun Character */ 

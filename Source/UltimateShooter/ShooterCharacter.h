@@ -244,7 +244,11 @@ protected:
 
 	float GetDamageAfterArmorDeduction(float DamageAmount) const;
 
-	void PlayArmorRicochetSound() const;
+	void PlayArmorNegationSound() const;
+
+	void PlayArmorNegationEmote() const;
+
+	void AlertEnemiesInNoiseRange(TArray<AActor*> EnemiesInRange);
 
 public:
 	// Called every frame
@@ -532,7 +536,12 @@ private:
 	float MaxArmor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class USoundCue* ArmorRicochetSound;
+	class USoundCue* ArmorNegationSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USoundCue* ArmorNegationEmote;
+
+	FTimerHandle ArmorNegationEmoteTimer;
 
 	/** Sound to play when character gets hit by a melee attack */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -557,6 +566,10 @@ private:
 	/** Blood partles spawned on hit */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		UParticleSystem* BloodParticles;
+	
+	/** Particles to show Armor Negation on Enemy Hit */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* ArmorNegationParticles;
 
 	/** Montage to play when character is hit */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -586,6 +599,9 @@ private:
 	float DefaultSceneVignette;
 	float CurrentSceneVignette;
 	float SlowMotionSceneVignette;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		class USphereComponent* NoiseRangeSphere;
 
 public:
 
@@ -639,6 +655,7 @@ public:
 	FORCEINLINE AWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
 	FORCEINLINE USoundCue* GetMeleeImpactSound() const { return MeleeImpactSound; }
 	FORCEINLINE UParticleSystem* GetBloodParticles() const { return BloodParticles; }
+	FORCEINLINE UParticleSystem* GetArmorNegationParticles() const { return ArmorNegationParticles; }
 
 	void Stun();
 
@@ -648,4 +665,6 @@ public:
 
 	void SetSceneFringe(float Amount, bool bOverride = true);
 	void SetSceneVignette(float Amount, bool bOverride = true);
+
+	TArray<class AActor*> GetEnemiesInNoiseRange();
 };

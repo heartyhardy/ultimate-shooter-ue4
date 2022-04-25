@@ -2,6 +2,7 @@
 
 
 #include "Weapon.h"
+#include "Components/SphereComponent.h"
 
 AWeapon::AWeapon() :
 	ThrowWeaponTime(0.7f),
@@ -36,6 +37,8 @@ void AWeapon::Tick(float DeltaTime)
 
 	// Update Slide on Pistol
 	UpdateSlideDisplacement();
+
+	RotateWhenOnPickup();
 }
 
 void AWeapon::ThrowWeapon()
@@ -126,8 +129,8 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("SubmachineGun"), TEXT(""));
 			break;
 
-		case EWeaponType::EWT_AssultRifle:
-			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("AssualtRifle"), TEXT(""));
+		case EWeaponType::EWT_AssaultRifle:
+			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("AssaultRifle"), TEXT(""));
 			break;
 
 		case EWeaponType::EWT_Pistol:
@@ -202,5 +205,17 @@ void AWeapon::UpdateSlideDisplacement()
 		const float CurveValue{ SlideDisplacementCurve->GetFloatValue(ElapsedTime) };
 		SlideDisplacement = CurveValue * MaxSlideDisplacement;
 		RecoilRotation = CurveValue * MaxRecoilRotation;
+	}
+}
+
+void AWeapon::RotateWhenOnPickup()
+{
+	if (GetItemState() == EItemState::EIS_Pickup)
+	{
+		const FRotator CurrentRotation{ GetActorRotation() };
+		const float NewYaw = CurrentRotation.Yaw + 0.75f;
+		const FRotator NewRotation{ 0.f, NewYaw , 0.f };
+
+		SetActorRotation(NewRotation, ETeleportType::None);
 	}
 }

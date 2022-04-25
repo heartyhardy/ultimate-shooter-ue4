@@ -41,7 +41,8 @@ AEnemy::AEnemy() :
 	bDying(false),
 	DeathTime(4.f),
 	ExplosiveSlowMotionTime(1.25f),
-	bInExplosiveSlowMotion(false)
+	bInExplosiveSlowMotion(false),
+	EmoteBubbleDisplayTime(4.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -142,6 +143,18 @@ void AEnemy::ShowHealthBar_Implementation()
 	);
 }
 
+void AEnemy::ShowEmoteBubble_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("SHOW EMOTE BUBBLE IMPL"));
+	GetWorldTimerManager().ClearTimer(EmoteBubbleTimer);
+	GetWorldTimerManager().SetTimer(
+		EmoteBubbleTimer,
+		this,
+		&AEnemy::HideEmoteBubble,
+		EmoteBubbleDisplayTime
+	);
+}
+
 void AEnemy::Die()
 {
 	if (bDying) return;
@@ -149,6 +162,7 @@ void AEnemy::Die()
 	bDying = true;
 
 	HideHealthBar();
+	HideEmoteBubble();
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance)
@@ -345,8 +359,12 @@ void AEnemy::OnLeftWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	if (Character)
 	{
 		float AbsoluteDamage = DoDamage(Character);		
-		if (AbsoluteDamage <= 0.f) return;
-		// TODO: Spawn Armor Negate Effect VFX
+		//Spawn Armor Negate Effect VFX
+		if (AbsoluteDamage <= 0.f)
+		{
+			ShowArmorNegation(Character, LeftWeaponSocket);
+			return;
+		}
 
 		SpawnBlood(Character, LeftWeaponSocket);
 		StunCharacter(Character);
@@ -359,8 +377,13 @@ void AEnemy::OnRightWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 	if (Character)
 	{
 		float AbsoluteDamage = DoDamage(Character);
-		if (AbsoluteDamage <= 0.f) return;
-		// TODO: Spawn Armor Negate Effect VFX
+
+		//Spawn Armor Negate Effect VFX
+		if (AbsoluteDamage <= 0.f)
+		{
+			ShowArmorNegation(Character, RightWeaponSocket);
+			return;
+		}
 
 		SpawnBlood(Character, RightWeaponSocket);
 		StunCharacter(Character);
@@ -423,6 +446,23 @@ void AEnemy::SpawnBlood(AShooterCharacter* Victim, FName SocketName)
 			UGameplayStatics::SpawnEmitterAtLocation(
 				GetWorld(),
 				Victim->GetBloodParticles(),
+				SocketTransform
+			);
+		}
+	}
+}
+
+void AEnemy::ShowArmorNegation(AShooterCharacter* Victim, FName SocketName)
+{
+	const USkeletalMeshSocket* TipSocket{ GetMesh()->GetSocketByName(SocketName) };
+	if (TipSocket)
+	{
+		const FTransform SocketTransform{ TipSocket->GetSocketTransform(GetMesh()) };
+		if (Victim->GetArmorNegationParticles())
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				Victim->GetArmorNegationParticles(),
 				SocketTransform
 			);
 		}
@@ -582,5 +622,10 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	}
 
 	return DamageAmount;
+}
+
+void AEnemy::AlertEnemy()
+{
+	ShowEmoteBubble();
 }
 

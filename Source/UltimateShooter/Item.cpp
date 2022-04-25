@@ -241,6 +241,9 @@ void AItem::SetItemProperties(EItemState State)
 		// Set Collision Box Properties
 		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		// Set the Yaw to 0
+		SetActorRotation(FRotator(0.f, 0.f, 0.f), ETeleportType::None);
 		break;
 
 	case EItemState::EIS_PickedUp:

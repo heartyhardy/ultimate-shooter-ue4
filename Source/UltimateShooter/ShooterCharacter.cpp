@@ -107,6 +107,11 @@ AShooterCharacter::AShooterCharacter() :
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	//Noise Range Sphere to Alert Enemies when player shoots
+	NoiseRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Noise Range Sphere"));
+	NoiseRangeSphere->SetSphereRadius(200.f);
+	NoiseRangeSphere->SetupAttachment(GetRootComponent());
+
 	/** Create a Camera Boom: Pulls in towards the character if there's a collision **/
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -176,7 +181,15 @@ float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	if (CanReduceFromArmor(DamageAmount))
 	{
 		Armor -= DamageAmount;
-		PlayArmorRicochetSound();
+
+		GetWorldTimerManager().SetTimer(
+			ArmorNegationEmoteTimer,
+			this,
+			&ThisClass::PlayArmorNegationEmote,
+			.35f
+		);
+
+		PlayArmorNegationSound();
 		return 0.f;
 	}
 	else
@@ -340,16 +353,48 @@ float AShooterCharacter::GetDamageAfterArmorDeduction(float DamageAmount) const
 	return FMath::Abs(Armor - DamageAmount);
 }
 
-void AShooterCharacter::PlayArmorRicochetSound() const
+void AShooterCharacter::PlayArmorNegationSound() const
 {
-	if (ArmorRicochetSound)
+	if (ArmorNegationSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(
 			GetWorld(),
-			ArmorRicochetSound,
+			ArmorNegationSound,
 			GetActorLocation()
 		);
 	}
+}
+
+void AShooterCharacter::PlayArmorNegationEmote() const
+{
+	const float EmoteChance = FMath::FRandRange(0.f, 1.f);
+
+	if (ArmorNegationEmote && EmoteChance > 0.1f) // Change this back to 0.5 or above
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			ArmorNegationEmote,
+			GetActorLocation()
+		);
+	}
+}
+
+void AShooterCharacter::AlertEnemiesInNoiseRange(TArray<AActor*> EnemiesInRange)
+{
+	for (auto Enemy : EnemiesInRange)
+	{
+		auto EnemyInRange = Cast<AEnemy>(Enemy);
+		if (EnemyInRange)
+		{
+			auto EnemyController = Cast<AEnemyController>(EnemyInRange->GetController());
+			if (EnemyController)
+			{
+				EnemyInRange->AlertEnemy();
+				EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), this);
+			}
+		}
+	}
+	// Alert Enemies in the Given TArray
 }
 
 	// Called when the game starts or when spawned
@@ -505,6 +550,11 @@ void AShooterCharacter::FireWeapon()
 		PlayFireSound();
 		SendBullet();
 		PlayGunfireMontage();
+
+		// TODO: Get Enemies In Range
+		// TODO: Do a Random Chance or Timeout??
+		AlertEnemiesInNoiseRange(GetEnemiesInNoiseRange());
+		
 		EquippedWeapon->DecrementAmmo();
 		/** Start Timer for crosshair spread factor when firing */
 		StartCrosshairFireTimer();
@@ -758,6 +808,14 @@ void AShooterCharacter::SetSceneVignette(float Amount, bool bOverride)
 
 	if (!bOverride && CurrentSceneVignette > 0.1f) return;
 	GetFollowCamera()->PostProcessSettings.bOverride_VignetteIntensity = bOverride;
+}
+
+TArray<class AActor*> AShooterCharacter::GetEnemiesInNoiseRange()
+{
+	TArray<AActor*> EnemiesInRange;
+	GetOverlappingActors(EnemiesInRange, AEnemy::StaticClass());
+
+	return EnemiesInRange;
 }
 
 int32 AShooterCharacter::GetInterpLocationIndex()

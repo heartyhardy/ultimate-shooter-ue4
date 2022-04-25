@@ -119,6 +119,8 @@ protected:
 
 	void UpdateSlideDisplacement();
 
+	void RotateWhenOnPickup();
+
 private:
 	FTimerHandle ThrowWeaponTimer;
 	float ThrowWeaponTime;

@@ -27,6 +27,13 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void HideHealthBar();
 
+	UFUNCTION(BlueprintNativeEvent)
+	void ShowEmoteBubble();
+	void ShowEmoteBubble_Implementation();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void HideEmoteBubble();
+
 	void Die();
 
 	void PlayHitMontage(FName Section, float PlayRate = 1.0f);
@@ -116,6 +123,7 @@ protected:
 
 	float DoDamage(class AShooterCharacter* Victim);
 	void SpawnBlood(AShooterCharacter* Victim, FName SocketName);
+	void ShowArmorNegation(AShooterCharacter* Victim, FName SocketName);
 
 	/** Attempt to Stun Character */ 
 	void StunCharacter(AShooterCharacter* Victim);
@@ -285,6 +293,13 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bInExplosiveSlowMotion;
 
+	/** Time to Display HP Bar once attacked */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float EmoteBubbleDisplayTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FTimerHandle EmoteBubbleTimer;
+
 
 public:	
 	// Called every frame
@@ -301,4 +316,6 @@ public:
 	void ShowHitNumber(int32 Damage, FVector HitLocation, bool bHeadShot);
 
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
+
+	void AlertEnemy();
 };

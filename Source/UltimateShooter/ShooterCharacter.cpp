@@ -597,12 +597,16 @@ void AShooterCharacter::StartAiming()
 void AShooterCharacter::Aim()
 {
 	bAiming = true;
+
+	CameraBoom->bEnableCameraLag = false;
 	GetCharacterMovement()->MaxWalkSpeed = CrouchMovementSpeed; //Walking slowly while aiming
 }
 
 void AShooterCharacter::ExitAiming()
 {
 	bAiming = false;
+
+	CameraBoom->bEnableCameraLag = true;
 	if (!bCrouching)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed; //Walking slowly while aiming

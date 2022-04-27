@@ -102,7 +102,8 @@ AShooterCharacter::AShooterCharacter() :
 	SlowMotionSceneFringe(2.f),
 	DefaultSceneVignette(0.f),
 	CurrentSceneVignette(0.f),
-	SlowMotionSceneVignette(1.5f)
+	SlowMotionSceneVignette(1.5f),
+	ExplosionSlowMoEmoteDelay(0.5f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -369,11 +370,25 @@ void AShooterCharacter::PlayArmorNegationEmote() const
 {
 	const float EmoteChance = FMath::FRandRange(0.f, 1.f);
 
-	if (ArmorNegationEmote && EmoteChance > 0.1f) // Change this back to 0.5 or above
+	if (ArmorNegationEmote && EmoteChance > 0.5f) // Change this back to 0.5 or above
 	{
 		UGameplayStatics::PlaySoundAtLocation(
 			GetWorld(),
 			ArmorNegationEmote,
+			GetActorLocation()
+		);
+	}
+}
+
+void AShooterCharacter::PlayExplosionSlowMoEmote()
+{
+	const float EmoteChance = FMath::FRandRange(0.f, 1.f);
+
+	if (ExplosionSlowMoEmoteSound && EmoteChance > 0.2f)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			ExplosionSlowMoEmoteSound,
 			GetActorLocation()
 		);
 	}
@@ -810,6 +825,19 @@ void AShooterCharacter::SetSceneVignette(float Amount, bool bOverride)
 	GetFollowCamera()->PostProcessSettings.bOverride_VignetteIntensity = bOverride;
 }
 
+void AShooterCharacter::StartExplosionSlowMoEmote()
+{
+	if (!GetWorldTimerManager().IsTimerActive(ExplosionSlowMoEmoteTimer))
+	{
+		GetWorldTimerManager().SetTimer(
+			ExplosionSlowMoEmoteTimer,
+			this,
+			&ThisClass::PlayExplosionSlowMoEmote,
+			ExplosionSlowMoEmoteDelay
+		);
+	}
+}
+
 TArray<class AActor*> AShooterCharacter::GetEnemiesInNoiseRange()
 {
 	TArray<AActor*> EnemiesInRange;
@@ -1213,6 +1241,9 @@ void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip, bool bSwapping)
 		// Set the Given weapon as the Equipped weapon
 		EquippedWeapon = WeaponToEquip;
 		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+
+		// Set Noise Range for the Weapon
+		NoiseRangeSphere->SetSphereRadius(EquippedWeapon->GetNoiseRange());
 	}
 }
 

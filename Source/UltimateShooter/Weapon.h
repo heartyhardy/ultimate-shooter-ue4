@@ -96,6 +96,9 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float HeadshotDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float NoiseRange;
 };
 
 UCLASS()
@@ -231,6 +234,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	float HeadshotDamage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	float NoiseRange;
+
 public:
 	// Add impulse to the weapon
 	void ThrowWeapon();
@@ -264,6 +270,7 @@ public:
 
 	FORCEINLINE float GetDamage() const { return Damage; }
 	FORCEINLINE float GetHeadshotDamage() const { return HeadshotDamage; }
+	FORCEINLINE float GetNoiseRange() const { return NoiseRange; }
 
 	void StartSlideTimer();
 

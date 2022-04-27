@@ -169,6 +169,7 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			bAutomatic = WeaponDataRow->bAutomatic;
 			Damage = WeaponDataRow->Damage;
 			HeadshotDamage = WeaponDataRow->HeadshotDamage;
+			NoiseRange = WeaponDataRow->NoiseRange;
 		}
 
 		if (GetMaterialInstance())

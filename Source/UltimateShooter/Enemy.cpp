@@ -519,8 +519,10 @@ void AEnemy::ApplyExplosiveSlowMotion(AActor* DamageCauser)
 		auto Shooter = Cast<AShooterCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 		if (Shooter)
 		{
+			// TODO: Slow Motion Emote
 			Shooter->SetSceneFringe(3.0f);
 			Shooter->SetSceneVignette(1.5f);
+			Shooter->StartExplosionSlowMoEmote();
 		}
 
 		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.3f);

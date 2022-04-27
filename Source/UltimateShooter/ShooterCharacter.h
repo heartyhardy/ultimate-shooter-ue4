@@ -250,6 +250,9 @@ protected:
 
 	void AlertEnemiesInNoiseRange(TArray<AActor*> EnemiesInRange);
 
+	UFUNCTION()
+	void PlayExplosionSlowMoEmote();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -555,6 +558,10 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		USoundCue* HeavyPainSound;
 
+	/** Sound to play when entering Slow mo from Delayed Blast */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USoundCue* ExplosionSlowMoEmoteSound;
+
 	/** Normal to Heavy damage threshold. Anything above this threshold will result in playing HeavyPain sound cue */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		float PainThreshold;
@@ -602,6 +609,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		class USphereComponent* NoiseRangeSphere;
+
+	FTimerHandle ExplosionSlowMoEmoteTimer;
+	float ExplosionSlowMoEmoteDelay;
 
 public:
 
@@ -665,6 +675,7 @@ public:
 
 	void SetSceneFringe(float Amount, bool bOverride = true);
 	void SetSceneVignette(float Amount, bool bOverride = true);
+	void StartExplosionSlowMoEmote();
 
 	TArray<class AActor*> GetEnemiesInNoiseRange();
 };

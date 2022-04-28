@@ -103,3 +103,6 @@ Content/FPS_Weapon_Bundle/*
 Content/A_Surface_Footstep/*
 Content/KiteDemo/*
 Content/STF
+
+#Large Maps
+Content/_Game/Maps/Closed_Alpha_Demo_Map.umap

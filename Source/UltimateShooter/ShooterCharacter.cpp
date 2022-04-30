@@ -25,6 +25,8 @@
 #include "Enemy.h"
 #include "EnemyController.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "GameFramework/GameState.h"
+#include "ShooterGameState.h"
 
 
 // Sets default values
@@ -107,6 +109,7 @@ AShooterCharacter::AShooterCharacter() :
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
 
 	//Noise Range Sphere to Alert Enemies when player shoots
 	NoiseRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Noise Range Sphere"));
@@ -419,6 +422,15 @@ void AShooterCharacter::BeginPlay()
 
 	DefaultCameraFOV = FollowCamera->FieldOfView;
 	CurrentCameraFOV = DefaultCameraFOV;
+
+	// Apply Level based noise modifier
+	auto* GameState = Cast<AShooterGameState>(GetWorld()->GetGameState());
+	if (GameState)
+	{
+		float LevelNoiseRangeModifier = GameState->GetLevelNoiseModifier();
+		NoiseRangeSphere->SetSphereRadius(NoiseRangeSphere->GetUnscaledSphereRadius() * LevelNoiseRangeModifier);
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Radius: %f"), NoiseRangeSphere->GetUnscaledSphereRadius());
 
 	// Spawn the default weapon and equip it
 	EquipWeapon(SpawnDefaultWeapon());

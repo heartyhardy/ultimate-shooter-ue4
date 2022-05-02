@@ -59,6 +59,17 @@ protected:
 		const FHitResult& SweepResult
 	);
 
+	/** Called when something overlaps with the Scout Sphere */
+	UFUNCTION()
+	void ScoutSphereOverlap(
+		UPrimitiveComponent* OverlappedComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
 	UFUNCTION(BlueprintCallable)
 	void SetStunned(bool Stunned);
 
@@ -142,6 +153,9 @@ protected:
 	/** Explosive Delayed Blast slow motion reset */
 	void ResetExplosiveSlowMotion();
 
+	/** Play Enemy Detected Sound On Timer */
+	void PlayEnemyDetectedSound();
+
 private:
 
 	/** Particles to spawn when hit by player attacks */
@@ -213,6 +227,14 @@ private:
 	/** Overlap sphere for when the enemy becomes hostile towards player */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* AgroSphere;
+
+	/** Overlap sphere for when the enemy becomes hostile towards player */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* ScoutSphere;
+
+	/** Overlap sphere for when the enemy becomes hostile towards player */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	bool bScouting;
 
 	/** True when playing Hit Animation */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
@@ -300,6 +322,13 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	FTimerHandle EmoteBubbleTimer;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USoundCue* EnemyDetectedSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	float EnemyDetectedSoundCooldown;
+
+	FTimerHandle EnemyDetectedSoundTimer;
 
 public:	
 	// Called every frame
@@ -316,6 +345,8 @@ public:
 	void ShowHitNumber(int32 Damage, FVector HitLocation, bool bHeadShot);
 
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
+
+	FORCEINLINE AEnemyController* GetEnemyController() const { return EnemyController; }
 
 	void AlertEnemy();
 };

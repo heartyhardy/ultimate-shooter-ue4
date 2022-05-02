@@ -42,7 +42,9 @@ AEnemy::AEnemy() :
 	DeathTime(4.f),
 	ExplosiveSlowMotionTime(1.25f),
 	bInExplosiveSlowMotion(false),
-	EmoteBubbleDisplayTime(4.f)
+	EmoteBubbleDisplayTime(4.f),
+	bScouting(false),
+	EnemyDetectedSoundCooldown(4.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -50,6 +52,10 @@ AEnemy::AEnemy() :
 	// Create Agro Sphere
 	AgroSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AgroSphere"));
 	AgroSphere->SetupAttachment(GetRootComponent());
+
+	// Create Scout Sphere
+	ScoutSphere = CreateDefaultSubobject<USphereComponent>(TEXT("ScoutSphere"));
+	ScoutSphere->SetupAttachment(GetRootComponent());
 
 	// Create Combat Range Sphere
 	CombatRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CombatRangeSphere"));
@@ -68,6 +74,12 @@ void AEnemy::BeginPlay()
 	Super::BeginPlay();
 
 	AgroSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AgroSphereOverlap); // Bind the overlap event
+
+	if (bScouting)
+	{
+		ScoutSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::ScoutSphereOverlap); // Bind the scout sphere overlap event
+	}
+
 	CombatRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::CombatSphereOverlap); //Bind the combat sphere begin overlap
 	CombatRangeSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::CombatSphereEndOverlap); // Bind the combat sphere end overlap
 
@@ -261,6 +273,46 @@ void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 			{
 				// Set the value of the "Target" key
 				EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Character);
+			}
+		}
+	}
+}
+
+void AEnemy::ScoutSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!bScouting) return;
+	if (!OtherActor) return;
+
+	auto Character = Cast<AShooterCharacter>(OtherActor);
+	if (Character)
+	{
+		// Show Emote Bubble of the Scout
+		// TODO: Decide if this is acceptable in gameplay as this shows the location of the Scout!
+		ShowEmoteBubble();
+		
+		// Start Enemy Detected Timer
+		if (!GetWorldTimerManager().IsTimerActive(EnemyDetectedSoundTimer))
+		{
+			GetWorldTimerManager().SetTimer(
+				EnemyDetectedSoundTimer,
+				this,
+				&ThisClass::PlayEnemyDetectedSound,
+				EnemyDetectedSoundCooldown
+			);
+		}
+
+		TArray<AActor*> OverlappedAllies;
+		GetOverlappingActors(OverlappedAllies, AEnemy::StaticClass());
+
+		for (auto AllyActor : OverlappedAllies)
+		{
+			auto Ally = Cast<AEnemy>(AllyActor);
+			if (Ally && !Ally->bScouting)
+			{
+				if (Ally->EnemyController)
+				{
+					Ally->EnemyController->GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), Character);
+				}
 			}
 		}
 	}
@@ -545,6 +597,19 @@ void AEnemy::ResetExplosiveSlowMotion()
 	{
 		Shooter->SetSceneFringe(3.f, false);
 		Shooter->SetSceneVignette(1.5f, false);
+	}
+}
+
+void AEnemy::PlayEnemyDetectedSound()
+{
+	// Play Enemy Detected Sound
+	if (EnemyDetectedSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			EnemyDetectedSound,
+			GetActorLocation()
+		);
 	}
 }
 

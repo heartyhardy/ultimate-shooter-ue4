@@ -1225,6 +1225,7 @@ AWeapon* AShooterCharacter::SpawnDefaultWeapon()
 	{
 		// Spawn the weapon
 		AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+		DefaultWeapon->SetWeaponType(EWeaponType::EWT_Pistol);
 		return DefaultWeapon;
 	}
 	return nullptr;

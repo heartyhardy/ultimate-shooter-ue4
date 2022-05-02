@@ -16,8 +16,8 @@
 AItem::AItem() :
 	ItemName(FString("Default")),
 	ItemCount(0),
-	ItemRarity(EItemRarity::EWR_Common),
 	ItemState(EItemState::EIS_Pickup),
+	ItemRarity(EItemRarity::EWR_Damaged),
 	// Item interping
 	ZCurveTime(.7f),
 	ItemInterpStartLocation(FVector(0.f)),

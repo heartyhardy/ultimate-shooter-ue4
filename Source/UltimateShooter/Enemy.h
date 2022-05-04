@@ -232,9 +232,29 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* ScoutSphere;
 
-	/** Overlap sphere for when the enemy becomes hostile towards player */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	/** Is this enmey a scout? */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Scout", meta = (AllowPrivateAccess = "true"))
 	bool bScouting;
+
+	/** Is this enemy raging? This is only considered if bScouting is TRUE */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Scout", meta = (AllowPrivateAccess = "true"))
+	bool bRaging;
+
+	/** Applies Only to SCOUTS! When Scouts spot a player, they grant a speed boost to Allies! */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scout", meta = (AllowPrivateAccess = "true"))
+	float ScoutMinWalkSpeedBoost;
+
+	/** Applies Only to SCOUTS! When Scouts spot a player, they grant a speed boost to Allies! */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scout", meta = (AllowPrivateAccess = "true"))
+	float ScoutMaxWalkSpeedBoost;
+
+	/** Applies Only to SCOUTS! If bRaging is TRUE, Scouts grant a damage boost to Allies! */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scout", meta = (AllowPrivateAccess = "true"))
+	float ScoutMinRageDamageBonus;
+
+	/** Applies Only to SCOUTS! If bRaging is TRUE, Scouts grant a damage boost to Allies! */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scout", meta = (AllowPrivateAccess = "true"))
+	float ScoutMaxRageDamageBonus;
 
 	/** True when playing Hit Animation */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))

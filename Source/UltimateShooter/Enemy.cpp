@@ -44,7 +44,12 @@ AEnemy::AEnemy() :
 	bInExplosiveSlowMotion(false),
 	EmoteBubbleDisplayTime(4.f),
 	bScouting(false),
-	EnemyDetectedSoundCooldown(4.f)
+	bRaging(false),
+	EnemyDetectedSoundCooldown(4.f),
+	ScoutMinWalkSpeedBoost(30.f),
+	ScoutMaxWalkSpeedBoost(60.f),
+	ScoutMinRageDamageBonus(5.f),
+	ScoutMaxRageDamageBonus(15.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -311,6 +316,12 @@ void AEnemy::ScoutSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 			{
 				if (Ally->EnemyController)
 				{
+					// Speed boost all allies!
+					if (bRaging)
+					{
+						Ally->BaseDamage += FMath::FRandRange(ScoutMinRageDamageBonus, ScoutMaxRageDamageBonus);
+					}
+					Ally->GetCharacterMovement()->MaxWalkSpeed += FMath::FRandRange(ScoutMinWalkSpeedBoost, ScoutMaxWalkSpeedBoost);
 					Ally->EnemyController->GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), Character);
 				}
 			}

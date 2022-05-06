@@ -156,6 +156,9 @@ protected:
 	/** Play Enemy Detected Sound On Timer */
 	void PlayEnemyDetectedSound();
 
+	/** Play Enemy Detected Sound On Timer */
+	void PlayInitiateAmbushSound();
+
 private:
 
 	/** Particles to spawn when hit by player attacks */
@@ -235,6 +238,10 @@ private:
 	/** Is this enmey a scout? */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Scout", meta = (AllowPrivateAccess = "true"))
 	bool bScouting;
+
+	/** If set to FALSE, this enemy won't respond to Scout calls when player is spotted by them */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scout", meta = (AllowPrivateAccess = "true"))
+	bool bRespondToScouts;
 
 	/** Is this enemy raging? This is only considered if bScouting is TRUE */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Scout", meta = (AllowPrivateAccess = "true"))
@@ -345,10 +352,18 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	USoundCue* EnemyDetectedSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USoundCue* InitiateAmbushSound;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float EnemyDetectedSoundCooldown;
 
 	FTimerHandle EnemyDetectedSoundTimer;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	float InitiateAmbushSoundCooldown;
+
+	FTimerHandle InitiateAmbushSoundTimer;
 
 public:	
 	// Called every frame

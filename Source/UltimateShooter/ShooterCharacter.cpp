@@ -1380,7 +1380,7 @@ void AShooterCharacter::SendBullet()
 					if (BeamHitResult.BoneName.ToString() == HitEnemy->GetHeadBone())
 					{
 						// Apply Headshot dmg
-						Damage = EquippedWeapon->GetHeadshotDamage();
+						Damage = EquippedWeapon->GetHeadshotDamage() + EquippedWeapon->GetRarityBonusHeadshotDamage();
 						UGameplayStatics::ApplyDamage(
 							BeamHitResult.GetActor(),
 							Damage, // For now
@@ -1395,7 +1395,7 @@ void AShooterCharacter::SendBullet()
 					else
 					{
 						// Apply Bodyshot damage
-						Damage = EquippedWeapon->GetDamage();
+						Damage = EquippedWeapon->GetDamage() + EquippedWeapon->GetRarityBonusDamage();
 						UGameplayStatics::ApplyDamage(
 							BeamHitResult.GetActor(),
 							Damage, // For now

@@ -101,6 +101,19 @@ struct FWeaponDataTable : public FTableRowBase
 	float NoiseRange;
 };
 
+USTRUCT(BlueprintType)
+struct FRarityBasedPropsTable : public FTableRowBase
+{
+
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BonusDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BonusHeadshotDamage;
+};
+
 UCLASS()
 class ULTIMATESHOOTER_API AWeapon : public AItem
 {
@@ -234,6 +247,14 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		float HeadshotDamage;
 
+	/** Weapon Default Damage */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		float RarityBonusDamage;
+
+	/** Weapon Damage on Headshot */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		float RarityBonusHeadshotDamage;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		float NoiseRange;
 
@@ -271,6 +292,9 @@ public:
 
 	FORCEINLINE float GetDamage() const { return Damage; }
 	FORCEINLINE float GetHeadshotDamage() const { return HeadshotDamage; }
+	FORCEINLINE float GetRarityBonusDamage() const { return RarityBonusDamage; }
+	FORCEINLINE float GetRarityBonusHeadshotDamage() const { return RarityBonusHeadshotDamage; }
+
 	FORCEINLINE float GetNoiseRange() const { return NoiseRange; }
 
 	void StartSlideTimer();

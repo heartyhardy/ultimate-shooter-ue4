@@ -119,6 +119,9 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 	const FString WeaponTablePath{ TEXT("DataTable'/Game/_Game/DataTables/DT_Weapon.DT_Weapon'") };
 	UDataTable* WeaponTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *WeaponTablePath));
 
+	const FString RarityBonusTablePath{ TEXT("DataTable'/Game/_Game/DataTables/DT_RarityBonusProps.DT_RarityBonusProps'") };
+	UDataTable* RarityBonusTableObject = Cast < UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *RarityBonusTablePath));
+
 	if (WeaponTableObject)
 	{
 		FWeaponDataTable* WeaponDataRow = nullptr;
@@ -178,6 +181,40 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			GetDynamicMaterialInstance()->SetVectorParameterValue(TEXT("Fresnel Color"), GetGlowColor());
 			GetItemMesh()->SetMaterial(GetMaterialIndex(), GetDynamicMaterialInstance());
 			EnableGlowMaterial();
+		}
+	}
+
+	if (RarityBonusTableObject)
+	{
+		FRarityBasedPropsTable* RarityBonusPropsRow = nullptr;
+
+		switch (GetItemRarity())
+		{
+			case EItemRarity::EWR_Damaged:
+				RarityBonusPropsRow = RarityBonusTableObject->FindRow<FRarityBasedPropsTable>(FName("Damaged"), TEXT(""));
+			break;
+
+			case EItemRarity::EWR_Common:
+				RarityBonusPropsRow = RarityBonusTableObject->FindRow<FRarityBasedPropsTable>(FName("Common"), TEXT(""));
+				break;
+
+			case EItemRarity::EWR_Uncommon:
+				RarityBonusPropsRow = RarityBonusTableObject->FindRow<FRarityBasedPropsTable>(FName("Uncommon"), TEXT(""));
+				break;
+
+			case EItemRarity::EWR_Rare:
+				RarityBonusPropsRow = RarityBonusTableObject->FindRow<FRarityBasedPropsTable>(FName("Rare"), TEXT(""));
+				break;
+				
+			case EItemRarity::EWR_Legendary:
+				RarityBonusPropsRow = RarityBonusTableObject->FindRow<FRarityBasedPropsTable>(FName("Legendary"), TEXT(""));
+				break;
+		}
+
+		if (RarityBonusPropsRow)
+		{
+			RarityBonusDamage = RarityBonusPropsRow->BonusDamage;
+			RarityBonusHeadshotDamage = RarityBonusPropsRow->BonusHeadshotDamage;
 		}
 	}
 

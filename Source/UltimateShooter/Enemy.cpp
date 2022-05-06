@@ -44,8 +44,10 @@ AEnemy::AEnemy() :
 	bInExplosiveSlowMotion(false),
 	EmoteBubbleDisplayTime(4.f),
 	bScouting(false),
+	bRespondToScouts(true),
 	bRaging(false),
-	EnemyDetectedSoundCooldown(4.f),
+	EnemyDetectedSoundCooldown(3.f),
+	InitiateAmbushSoundCooldown(7.f),
 	ScoutMinWalkSpeedBoost(30.f),
 	ScoutMaxWalkSpeedBoost(60.f),
 	ScoutMinRageDamageBonus(5.f),
@@ -312,7 +314,7 @@ void AEnemy::ScoutSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 		for (auto AllyActor : OverlappedAllies)
 		{
 			auto Ally = Cast<AEnemy>(AllyActor);
-			if (Ally && !Ally->bScouting)
+			if (Ally && !Ally->bScouting && Ally->bRespondToScouts)
 			{
 				if (Ally->EnemyController)
 				{
@@ -322,6 +324,20 @@ void AEnemy::ScoutSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 						Ally->BaseDamage += FMath::FRandRange(ScoutMinRageDamageBonus, ScoutMaxRageDamageBonus);
 					}
 					Ally->GetCharacterMovement()->MaxWalkSpeed += FMath::FRandRange(ScoutMinWalkSpeedBoost, ScoutMaxWalkSpeedBoost);
+					
+					if (Ally->InitiateAmbushSound)
+					{
+						if (!GetWorldTimerManager().IsTimerActive(Ally->InitiateAmbushSoundTimer))
+						{
+							GetWorldTimerManager().SetTimer(
+								Ally->InitiateAmbushSoundTimer,
+								Ally,
+								&ThisClass::PlayInitiateAmbushSound,
+								FMath::RandRange(EnemyDetectedSoundCooldown + 1.0f, Ally->InitiateAmbushSoundCooldown)
+							);
+						}
+					}
+					
 					Ally->EnemyController->GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), Character);
 				}
 			}
@@ -619,6 +635,19 @@ void AEnemy::PlayEnemyDetectedSound()
 		UGameplayStatics::PlaySoundAtLocation(
 			GetWorld(),
 			EnemyDetectedSound,
+			GetActorLocation()
+		);
+	}
+}
+
+void AEnemy::PlayInitiateAmbushSound()
+{
+	// Play Enemy Detected Sound
+	if (InitiateAmbushSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			InitiateAmbushSound,
 			GetActorLocation()
 		);
 	}

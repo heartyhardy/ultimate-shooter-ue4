@@ -502,6 +502,11 @@ void AItem::UpdatePulse()
 	}
 }
 
+EItemRarity AItem::GetItemRarity()
+{
+	return ItemRarity;
+}
+
 void AItem::DisableGlowMaterial()
 {
 	if (DynamicMaterialInstance)

@@ -125,6 +125,8 @@ protected:
 	void StartPulseTimer();
 	void UpdatePulse();
 
+	EItemRarity GetItemRarity();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

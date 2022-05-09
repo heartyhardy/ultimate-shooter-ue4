@@ -666,6 +666,9 @@ public:
 	FORCEINLINE USoundCue* GetMeleeImpactSound() const { return MeleeImpactSound; }
 	FORCEINLINE UParticleSystem* GetBloodParticles() const { return BloodParticles; }
 	FORCEINLINE UParticleSystem* GetArmorNegationParticles() const { return ArmorNegationParticles; }
+	FORCEINLINE float GetCurrentArmor() const { return Armor; }
+	FORCEINLINE float GetMaxArmor() const { return MaxArmor; }
+	void SetArmor(float Amount) { Armor = (Armor + Amount) > MaxArmor ? MaxArmor : Armor + Amount; }
 
 	void Stun();
 

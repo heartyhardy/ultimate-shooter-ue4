@@ -40,7 +40,7 @@ protected:
 		int OtherBodyIndex
 	);
 
-	void ApplyControlPointBonus();
+	void ApplyControlPointPerSecondBonus();
 
 public:	
 	// Called every frame
@@ -78,7 +78,17 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Control Point", meta = (AllowPrivateAccess = "true"))
 	float CooldownTime;
 
+	/** Particle system to play when bonus is applied */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Control Point", meta = (AllowPrivateAccess = "true"))
+	class UParticleSystem* ApplyBonusParticles;
+
 	FTimerHandle CooldownTimer;
 
 	class AShooterCharacter* ShooterCharacter;
+
+private:
+
+	void StartPersecondBonusTimer();
+	void PlayApplyBonusEffect();
+	void CleanUpBonusEffects(AShooterCharacter* TargetCharacter);
 };

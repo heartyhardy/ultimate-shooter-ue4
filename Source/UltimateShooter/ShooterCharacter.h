@@ -531,6 +531,14 @@ private:
 	/** Character Max Health */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		float MaxHealth;
+
+	/** Bonus modifiers to Damage. There can be only one source. It is overwritten by another. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float BaseDamageModifier;
+
+	/** Max allowed modifier to the damage */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float MaxBaseDamageModifier;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float Armor;
@@ -669,6 +677,10 @@ public:
 	FORCEINLINE float GetCurrentArmor() const { return Armor; }
 	FORCEINLINE float GetMaxArmor() const { return MaxArmor; }
 	void SetArmor(float Amount) { Armor = (Armor + Amount) > MaxArmor ? MaxArmor : Armor + Amount; }
+	FORCEINLINE float GetBaseDamageModifier() const { return BaseDamageModifier; }
+	FORCEINLINE float GetMaxBaseDamageModifier() const { return MaxBaseDamageModifier; }
+	void SetDamageModifier(float Amount) { BaseDamageModifier = (BaseDamageModifier + Amount) > MaxBaseDamageModifier ? MaxBaseDamageModifier : BaseDamageModifier + Amount; }
+	void ResetBaseDamageModifier() { BaseDamageModifier = 0; }
 
 	void Stun();
 

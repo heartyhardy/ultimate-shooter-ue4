@@ -105,7 +105,10 @@ AShooterCharacter::AShooterCharacter() :
 	DefaultSceneVignette(0.f),
 	CurrentSceneVignette(0.f),
 	SlowMotionSceneVignette(1.5f),
-	ExplosionSlowMoEmoteDelay(0.5f)
+	ExplosionSlowMoEmoteDelay(0.5f),
+	// Damage Modifiers
+	BaseDamageModifier(0.f),
+	MaxBaseDamageModifier(100.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -1380,7 +1383,7 @@ void AShooterCharacter::SendBullet()
 					if (BeamHitResult.BoneName.ToString() == HitEnemy->GetHeadBone())
 					{
 						// Apply Headshot dmg
-						Damage = EquippedWeapon->GetHeadshotDamage() + EquippedWeapon->GetRarityBonusHeadshotDamage();
+						Damage = EquippedWeapon->GetHeadshotDamage() + EquippedWeapon->GetRarityBonusHeadshotDamage() + BaseDamageModifier;
 						UGameplayStatics::ApplyDamage(
 							BeamHitResult.GetActor(),
 							Damage, // For now
@@ -1395,7 +1398,7 @@ void AShooterCharacter::SendBullet()
 					else
 					{
 						// Apply Bodyshot damage
-						Damage = EquippedWeapon->GetDamage() + EquippedWeapon->GetRarityBonusDamage();
+						Damage = EquippedWeapon->GetDamage() + EquippedWeapon->GetRarityBonusDamage() + BaseDamageModifier;
 						UGameplayStatics::ApplyDamage(
 							BeamHitResult.GetActor(),
 							Damage, // For now

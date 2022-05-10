@@ -3,6 +3,8 @@
 
 #include "ControlPoint.h"
 #include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "ShooterCharacter.h"
 
 // Sets default values
@@ -50,17 +52,10 @@ void AControlPoint::OnRangeSphereOverlap(UPrimitiveComponent* OverlappedComp, AA
 
 		if (ShooterCharacter)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ENTERING CONTROL POINT RANGE..."));
-
-			GetWorldTimerManager().ClearTimer(CooldownTimer);
-			GetWorldTimerManager().SetTimer
-			(
-				CooldownTimer,
-				this,
-				&ThisClass::ApplyControlPointBonus,
-				CooldownTime,
-				true
-			);
+			if (!bUseConstantBonus)
+			{
+				StartPersecondBonusTimer();
+			}
 		}
 	}
 }
@@ -72,20 +67,36 @@ void AControlPoint::OnRangeSphereEndOverlap(UPrimitiveComponent* OverlappedComp,
 		auto Character = Cast<AShooterCharacter>(OtherActor);
 		if (Character)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("EXITING CONTROL POINT RANGE..."));
-
 			GetWorldTimerManager().ClearTimer(CooldownTimer);
+			CleanUpBonusEffects(Character);
 			ShooterCharacter = nullptr;
 		}
 	}
 }
 
-void AControlPoint::ApplyControlPointBonus()
+void AControlPoint::ApplyControlPointPerSecondBonus()
 {
-	if (!ShooterCharacter) return;
-	UE_LOG(LogTemp, Warning, TEXT("GRANTING BONUS ARMOR..."));
+	switch (ControlPointType)
+	{
+	case EControlPointType::ECPT_Armor:
+		if (ControlPointFaction == EControlPointFaction::ECPF_Friendly)
+		{
+			if (!ShooterCharacter) return;
+			ShooterCharacter->SetArmor(PerSecondBonus);
+			PlayApplyBonusEffect();
+		}
+		break;
 
-	ShooterCharacter->SetArmor(PerSecondBonus);
+	case EControlPointType::ECPT_Damage:
+		if (ControlPointFaction == EControlPointFaction::ECPF_Friendly)
+		{
+			if (!ShooterCharacter) return;
+			ShooterCharacter->SetDamageModifier(PerSecondBonus);
+			PlayApplyBonusEffect();
+		}
+		break;
+	}
+
 }
 
 // Called every frame
@@ -93,5 +104,44 @@ void AControlPoint::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AControlPoint::StartPersecondBonusTimer()
+{
+	GetWorldTimerManager().ClearTimer(CooldownTimer);
+	GetWorldTimerManager().SetTimer
+	(
+		CooldownTimer,
+		this,
+		&ThisClass::ApplyControlPointPerSecondBonus,
+		CooldownTime,
+		true
+	);
+}
+
+void AControlPoint::PlayApplyBonusEffect()
+{
+	if (ApplyBonusParticles)
+	{
+		UGameplayStatics::SpawnEmitterAttached(
+			ApplyBonusParticles,
+			Cast<USceneComponent>(ShooterCharacter->GetCapsuleComponent()),
+			NAME_None,
+			((FVector)(ForceInit)),
+			FRotator::ZeroRotator,
+			EAttachLocation::SnapToTargetIncludingScale
+		);
+	}
+}
+
+void AControlPoint::CleanUpBonusEffects(AShooterCharacter* TargetCharacter)
+{
+	switch (ControlPointType)
+	{
+	case EControlPointType::ECPT_Damage:
+		if (!TargetCharacter) return;
+		TargetCharacter->ResetBaseDamageModifier();
+		break;
+	}
 }
 

@@ -95,6 +95,15 @@ void AControlPoint::ApplyControlPointPerSecondBonus()
 			PlayApplyBonusEffect();
 		}
 		break;
+
+	case EControlPointType::ECPT_Health:
+		if (ControlPointFaction == EControlPointFaction::ECPF_Friendly)
+		{
+			if (!ShooterCharacter) return;
+			ShooterCharacter->SetHealth(PerSecondBonus);
+			PlayApplyBonusEffect();
+		}
+		break;
 	}
 
 }

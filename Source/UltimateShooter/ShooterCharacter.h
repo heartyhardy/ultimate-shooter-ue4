@@ -674,13 +674,19 @@ public:
 	FORCEINLINE USoundCue* GetMeleeImpactSound() const { return MeleeImpactSound; }
 	FORCEINLINE UParticleSystem* GetBloodParticles() const { return BloodParticles; }
 	FORCEINLINE UParticleSystem* GetArmorNegationParticles() const { return ArmorNegationParticles; }
+	
 	FORCEINLINE float GetCurrentArmor() const { return Armor; }
 	FORCEINLINE float GetMaxArmor() const { return MaxArmor; }
 	void SetArmor(float Amount) { Armor = (Armor + Amount) > MaxArmor ? MaxArmor : Armor + Amount; }
+	
 	FORCEINLINE float GetBaseDamageModifier() const { return BaseDamageModifier; }
 	FORCEINLINE float GetMaxBaseDamageModifier() const { return MaxBaseDamageModifier; }
 	void SetDamageModifier(float Amount) { BaseDamageModifier = (BaseDamageModifier + Amount) > MaxBaseDamageModifier ? MaxBaseDamageModifier : BaseDamageModifier + Amount; }
 	void ResetBaseDamageModifier() { BaseDamageModifier = 0; }
+
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+	void SetHealth(float Amount) { Health = (Health + Amount) > MaxHealth ? MaxHealth : Health + Amount; }
 
 	void Stun();
 

@@ -74,6 +74,7 @@ AShooterCharacter::AShooterCharacter() :
 	// Movement
 	bCrouching(false),
 	BaseMovementSpeed(650.f),
+	MaxBaseMovementSpeed(1250.f),
 	CrouchMovementSpeed(300.f),
 	CrouchingCapsuleHalfHeight(44.f),
 	StandingCapsuleHalfHeight(88.f),
@@ -422,6 +423,8 @@ void AShooterCharacter::AlertEnemiesInNoiseRange(TArray<AActor*> EnemiesInRange)
 void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	DefaultBaseMovementSpeed = BaseMovementSpeed;
 
 	DefaultCameraFOV = FollowCamera->FieldOfView;
 	CurrentCameraFOV = DefaultCameraFOV;
@@ -801,6 +804,21 @@ void AShooterCharacter::UnHighlightInventorySlot()
 {
 	HighlightIconDelegate.Broadcast(HighlightedSlot, false);
 	HighlightedSlot = -1;
+}
+
+void AShooterCharacter::SetBonusBaseMovementSpeed(float Amount)
+{
+	BaseMovementSpeed = (BaseMovementSpeed + Amount) > MaxBaseMovementSpeed ? MaxBaseMovementSpeed : BaseMovementSpeed + Amount;
+	if (!bCrouching)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+	}
+}
+
+void AShooterCharacter::ResetBaseMovementSpeed()
+{
+	BaseMovementSpeed = DefaultBaseMovementSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
 }
 
 void AShooterCharacter::Stun()

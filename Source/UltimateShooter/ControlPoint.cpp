@@ -104,6 +104,14 @@ void AControlPoint::ApplyControlPointPerSecondBonus()
 			PlayApplyBonusEffect();
 		}
 		break;
+
+	case EControlPointType::ECPT_Speed:
+		if (ControlPointFaction == EControlPointFaction::ECPF_Friendly)
+		{
+			if (!ShooterCharacter) return;
+			ShooterCharacter->SetBonusBaseMovementSpeed(PerSecondBonus);
+			PlayApplyBonusEffect();
+		}
 	}
 
 }
@@ -150,6 +158,11 @@ void AControlPoint::CleanUpBonusEffects(AShooterCharacter* TargetCharacter)
 	case EControlPointType::ECPT_Damage:
 		if (!TargetCharacter) return;
 		TargetCharacter->ResetBaseDamageModifier();
+		break;
+
+	case EControlPointType::ECPT_Speed:
+		if (!TargetCharacter) return;
+		TargetCharacter->ResetBaseMovementSpeed();
 		break;
 	}
 }

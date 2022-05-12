@@ -6,6 +6,7 @@ enum class EControlPointType : uint8
 	ECPT_Armor UMETA(DisplayName = "Armor"),
 	ECPT_Damage UMETA(DisplayName = "Damage"),
 	ECPT_Health UMETA(DisplayName = "Health"),
+	ECPT_Speed UMETA(DisplayName = "Speed"),
 
 	ECPT_MAX UMETA(DisplayName = "DefaultMAX")
 };

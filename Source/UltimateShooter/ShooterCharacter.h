@@ -437,6 +437,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 		float BaseMovementSpeed;
 
+	float DefaultBaseMovementSpeed;
+
+	/** Maximum allowed movement speed */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+		float MaxBaseMovementSpeed;
+
 	/** Crouched movement speed */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 		float CrouchMovementSpeed;
@@ -687,6 +693,11 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	void SetHealth(float Amount) { Health = (Health + Amount) > MaxHealth ? MaxHealth : Health + Amount; }
+
+	FORCEINLINE float GetBaseMovementSpeed() const { return BaseMovementSpeed; }
+	FORCEINLINE float GetMaxBaseMovementSpeed() const { return MaxBaseMovementSpeed; }
+	void SetBonusBaseMovementSpeed(float Amount);
+	void ResetBaseMovementSpeed();
 
 	void Stun();
 

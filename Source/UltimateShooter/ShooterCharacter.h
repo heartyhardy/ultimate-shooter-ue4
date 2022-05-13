@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AmmoType.h"
+#include "PersistentEffectType.h"
 #include "ShooterCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -253,6 +254,12 @@ protected:
 	UFUNCTION()
 	void PlayExplosionSlowMoEmote();
 
+	UFUNCTION(BlueprintCallable)
+		void SetBonusDamageModifierTimed(float Damage, float Timeout);
+
+	UFUNCTION(BlueprintCallable)
+		void SetBonusSpeedModifierTimed(float Speed, float Timeout);
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -352,6 +359,10 @@ private:
 	/** Bullet Smoke Trail Beam particle system */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		UParticleSystem* SmokeBeam;
+
+	/** Pickup related persistent/replenishing effects such as Armor/Damage/Health/Speed */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		UParticleSystemComponent* PickupPersistentEffect;
 
 	/** Determine crosshair spread when firing */
 	bool bFiring;
@@ -627,6 +638,9 @@ private:
 	FTimerHandle ExplosionSlowMoEmoteTimer;
 	float ExplosionSlowMoEmoteDelay;
 
+	FTimerHandle DamageModifierTimeoutTimer;
+	FTimerHandle SpeedModifierTimeoutTimer;
+
 public:
 
 	/** Returns Camera boom subobject **/
@@ -688,7 +702,7 @@ public:
 	FORCEINLINE float GetBaseDamageModifier() const { return BaseDamageModifier; }
 	FORCEINLINE float GetMaxBaseDamageModifier() const { return MaxBaseDamageModifier; }
 	void SetDamageModifier(float Amount) { BaseDamageModifier = (BaseDamageModifier + Amount) > MaxBaseDamageModifier ? MaxBaseDamageModifier : BaseDamageModifier + Amount; }
-	void ResetBaseDamageModifier() { BaseDamageModifier = 0; }
+	void ResetBaseDamageModifier();
 
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }

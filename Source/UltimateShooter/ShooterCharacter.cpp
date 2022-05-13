@@ -137,6 +137,11 @@ AShooterCharacter::AShooterCharacter() :
 	VanityCamera->SetupAttachment(GetMesh()); // Attach it to the end of the Spring arm
 	VanityCamera->bUsePawnControlRotation = false; // Follow Rotation of the Camera Boom instead
 
+	/** Create the particle systems for persistent/replenishing effects such as Damage modifiers/Speed...  */
+	PickupPersistentEffect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("PersistentEffects"));
+	PickupPersistentEffect->SetupAttachment(GetRootComponent());
+	PickupPersistentEffect->SetActive(false);
+
 	/** Disable Character rotation when Controller rotates. Let the Controller only affect the Camera */
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
@@ -399,6 +404,36 @@ void AShooterCharacter::PlayExplosionSlowMoEmote()
 			GetActorLocation()
 		);
 	}
+}
+
+void AShooterCharacter::SetBonusDamageModifierTimed(float Damage, float Timeout)
+{
+	SetDamageModifier(Damage);
+
+	PickupPersistentEffect->Activate();
+
+	GetWorldTimerManager().ClearTimer(DamageModifierTimeoutTimer);
+	GetWorldTimerManager().SetTimer(
+		DamageModifierTimeoutTimer,
+		this,
+		&ThisClass::ResetBaseDamageModifier,
+		Timeout
+	);
+}
+
+void AShooterCharacter::SetBonusSpeedModifierTimed(float Speed, float Timeout)
+{
+	SetBonusBaseMovementSpeed(Speed);
+
+	PickupPersistentEffect->Activate();
+
+	GetWorldTimerManager().ClearTimer(SpeedModifierTimeoutTimer);
+	GetWorldTimerManager().SetTimer(
+		SpeedModifierTimeoutTimer,
+		this,
+		&ThisClass::ResetBaseMovementSpeed,
+		Timeout
+	);
 }
 
 void AShooterCharacter::AlertEnemiesInNoiseRange(TArray<AActor*> EnemiesInRange)
@@ -806,6 +841,14 @@ void AShooterCharacter::UnHighlightInventorySlot()
 	HighlightedSlot = -1;
 }
 
+void AShooterCharacter::ResetBaseDamageModifier()
+{
+	BaseDamageModifier = 0;
+
+	//TODO: ADD Deactivate Sound
+	PickupPersistentEffect->Deactivate();
+}
+
 void AShooterCharacter::SetBonusBaseMovementSpeed(float Amount)
 {
 	BaseMovementSpeed = (BaseMovementSpeed + Amount) > MaxBaseMovementSpeed ? MaxBaseMovementSpeed : BaseMovementSpeed + Amount;
@@ -819,6 +862,8 @@ void AShooterCharacter::ResetBaseMovementSpeed()
 {
 	BaseMovementSpeed = DefaultBaseMovementSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+
+	PickupPersistentEffect->Deactivate();
 }
 
 void AShooterCharacter::Stun()

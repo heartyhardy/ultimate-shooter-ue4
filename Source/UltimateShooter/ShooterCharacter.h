@@ -260,6 +260,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		void SetBonusSpeedModifierTimed(float Speed, float Timeout);
 
+	UFUNCTION(BlueprintCallable)
+		void PlayPickupExpireSound();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -594,6 +597,9 @@ private:
 	/** Sound to play when Character is dying*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		USoundCue* DeathSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Pickups, meta = (AllowPrivateAccess = "true"))
+		USoundCue* PickupExpireSound;
 
 	/** Blood partles spawned on hit */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))

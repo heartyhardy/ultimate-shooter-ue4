@@ -436,6 +436,17 @@ void AShooterCharacter::SetBonusSpeedModifierTimed(float Speed, float Timeout)
 	);
 }
 
+void AShooterCharacter::PlayPickupExpireSound()
+{
+	if (PickupExpireSound)
+	{
+		UGameplayStatics::PlaySound2D(
+			GetWorld(),
+			PickupExpireSound
+		);
+	}
+}
+
 void AShooterCharacter::AlertEnemiesInNoiseRange(TArray<AActor*> EnemiesInRange)
 {
 	for (auto Enemy : EnemiesInRange)
@@ -845,7 +856,7 @@ void AShooterCharacter::ResetBaseDamageModifier()
 {
 	BaseDamageModifier = 0;
 
-	//TODO: ADD Deactivate Sound
+	PlayPickupExpireSound();
 	PickupPersistentEffect->Deactivate();
 }
 
@@ -863,6 +874,7 @@ void AShooterCharacter::ResetBaseMovementSpeed()
 	BaseMovementSpeed = DefaultBaseMovementSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
 
+	PlayPickupExpireSound();
 	PickupPersistentEffect->Deactivate();
 }
 

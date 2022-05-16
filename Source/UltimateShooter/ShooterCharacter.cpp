@@ -109,7 +109,10 @@ AShooterCharacter::AShooterCharacter() :
 	ExplosionSlowMoEmoteDelay(0.5f),
 	// Damage Modifiers
 	BaseDamageModifier(0.f),
-	MaxBaseDamageModifier(100.f)
+	MaxBaseDamageModifier(100.f),
+	// Pickups
+	ActivePersistentEffects(0),
+	RejuvenationTimeout(1.0f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -409,6 +412,7 @@ void AShooterCharacter::PlayExplosionSlowMoEmote()
 void AShooterCharacter::SetBonusDamageModifierTimed(float Damage, float Timeout)
 {
 	SetDamageModifier(Damage);
+	ActivePersistentEffects++;
 
 	PickupPersistentEffect->Activate();
 
@@ -424,6 +428,7 @@ void AShooterCharacter::SetBonusDamageModifierTimed(float Damage, float Timeout)
 void AShooterCharacter::SetBonusSpeedModifierTimed(float Speed, float Timeout)
 {
 	SetBonusBaseMovementSpeed(Speed);
+	ActivePersistentEffects++;
 
 	PickupPersistentEffect->Activate();
 
@@ -433,6 +438,60 @@ void AShooterCharacter::SetBonusSpeedModifierTimed(float Speed, float Timeout)
 		this,
 		&ThisClass::ResetBaseMovementSpeed,
 		Timeout
+	);
+}
+
+void AShooterCharacter::SetRejuvenation(float Amount)
+{
+	SetHealth(Amount);	
+}
+
+void AShooterCharacter::StopRejuvenation()
+{
+	GetWorldTimerManager().ClearTimer(RejuvenationTimeoutTimer);
+	
+	PlayPickupExpireSound();
+
+	if (ActivePersistentEffects <= 1)
+	{
+		ActivePersistentEffects = 0;
+		PickupPersistentEffect->Deactivate();
+	}
+	else
+	{
+		ActivePersistentEffects--;
+	}
+}
+
+void AShooterCharacter::SetHelthRejuvenationTimed(float Rejuvenation, float Timeout, float ExpirationTime)
+{
+	FTimerHandle StopRejuvenationTimer;
+	FTimerDelegate RejuvenationDelegate;
+
+	RejuvenationDelegate.BindUFunction(
+		this,
+		FName("SetRejuvenation"),
+		Rejuvenation
+	);
+
+	ActivePersistentEffects++;
+
+	PickupPersistentEffect->Activate();
+
+	GetWorldTimerManager().ClearTimer(RejuvenationTimeoutTimer);
+	GetWorldTimerManager().SetTimer(
+		RejuvenationTimeoutTimer,
+		RejuvenationDelegate,
+		Timeout,
+		true
+	);
+
+	GetWorldTimerManager().ClearTimer(StopRejuvenationTimer);
+	GetWorldTimerManager().SetTimer(
+		StopRejuvenationTimer,
+		this,
+		&ThisClass::StopRejuvenation,
+		ExpirationTime
 	);
 }
 
@@ -857,7 +916,16 @@ void AShooterCharacter::ResetBaseDamageModifier()
 	BaseDamageModifier = 0;
 
 	PlayPickupExpireSound();
-	PickupPersistentEffect->Deactivate();
+
+	if (ActivePersistentEffects <= 1)
+	{
+		ActivePersistentEffects = 0;
+		PickupPersistentEffect->Deactivate();
+	}
+	else
+	{
+		ActivePersistentEffects--;
+	}
 }
 
 void AShooterCharacter::SetBonusBaseMovementSpeed(float Amount)
@@ -875,7 +943,16 @@ void AShooterCharacter::ResetBaseMovementSpeed()
 	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
 
 	PlayPickupExpireSound();
-	PickupPersistentEffect->Deactivate();
+	
+	if (ActivePersistentEffects <= 1)
+	{
+		ActivePersistentEffects = 0;
+		PickupPersistentEffect->Deactivate();
+	}
+	else
+	{
+		ActivePersistentEffects--;
+	}
 }
 
 void AShooterCharacter::Stun()

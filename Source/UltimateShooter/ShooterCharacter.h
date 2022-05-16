@@ -260,6 +260,15 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		void SetBonusSpeedModifierTimed(float Speed, float Timeout);
 
+	UFUNCTION()
+		void SetRejuvenation(float Amount);
+
+	UFUNCTION()
+		void StopRejuvenation();
+
+	UFUNCTION(BlueprintCallable)
+		void SetHelthRejuvenationTimed(float Rejuvenation, float Timeout, float ExpirationTime);
+
 	UFUNCTION(BlueprintCallable)
 		void PlayPickupExpireSound();
 
@@ -646,6 +655,10 @@ private:
 
 	FTimerHandle DamageModifierTimeoutTimer;
 	FTimerHandle SpeedModifierTimeoutTimer;
+	FTimerHandle RejuvenationTimeoutTimer;
+	float RejuvenationTimeout;
+
+	int32 ActivePersistentEffects;
 
 public:
 

@@ -620,9 +620,10 @@ void AEnemy::ResetExplosiveSlowMotion()
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 
 	auto Shooter = Cast<AShooterCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+
 	if (Shooter)
 	{
-		Shooter->SetSceneFringe(3.f, false);
+		Shooter->SetSceneFringe(3.0f, false); //Value not used
 		Shooter->SetSceneVignette(1.5f, false);
 	}
 }

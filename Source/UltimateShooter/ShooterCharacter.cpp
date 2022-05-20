@@ -540,6 +540,13 @@ void AShooterCharacter::BeginPlay()
 	{
 		float LevelNoiseRangeModifier = GameState->GetLevelNoiseModifier();
 		NoiseRangeSphere->SetSphereRadius(NoiseRangeSphere->GetUnscaledSphereRadius() * LevelNoiseRangeModifier);
+
+		// Set Screen Fringe
+		DefaultSceneFringe = GameState->GetDefaultScreenFringe();
+
+		// Turn on Follow Camera ScreenFringe ON by Default
+		GetFollowCamera()->PostProcessSettings.bOverride_SceneFringeIntensity = GameState->GetScreenFringeEnabled();
+		GetFollowCamera()->PostProcessSettings.SceneFringeIntensity = GameState->GetDefaultScreenFringe();
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Radius: %f"), NoiseRangeSphere->GetUnscaledSphereRadius());
 
@@ -980,7 +987,20 @@ void AShooterCharacter::SetSceneFringe(float Amount, bool bOverride)
 
 	if (!bOverride && CurrentSceneFringe > 0.1f) return;
 
-	GetFollowCamera()->PostProcessSettings.bOverride_SceneFringeIntensity = bOverride;
+	auto* GameState = Cast<AShooterGameState>(GetWorld()->GetGameState());
+
+	if (GameState)
+	{
+		if (GameState->GetDefaultScreenFringe() > 0.f && GameState->GetScreenFringeEnabled())
+		{
+			GetFollowCamera()->PostProcessSettings.bOverride_SceneFringeIntensity = true;
+			GetFollowCamera()->PostProcessSettings.SceneFringeIntensity = GameState->GetDefaultScreenFringe();
+		}
+		else
+		{
+			GetFollowCamera()->PostProcessSettings.bOverride_SceneFringeIntensity = bOverride;
+		}
+	}
 }
 
 void AShooterCharacter::SetSceneVignette(float Amount, bool bOverride)

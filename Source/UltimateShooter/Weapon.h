@@ -112,6 +112,12 @@ struct FRarityBasedPropsTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BonusHeadshotDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "30"))
+	int32 CriticalChance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "5"))
+	int32 CriticalDamageMultiplier;
 };
 
 UCLASS()
@@ -255,6 +261,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		float RarityBonusHeadshotDamage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "30"))
+		int32 RarityCriticalChance;
+		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "1", ClampMax = "5"))
+		int32 RarityCriticalMultiplier;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		float NoiseRange;
 
@@ -300,4 +312,7 @@ public:
 	void StartSlideTimer();
 
 	bool ClipIsFull();
+
+	bool CanCriticalHit();
+	float GetCriticalHit(bool bCanCriticalHit, float NoCritDamage);
 };

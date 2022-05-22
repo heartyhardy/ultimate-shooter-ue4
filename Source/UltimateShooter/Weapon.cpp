@@ -215,6 +215,8 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 		{
 			RarityBonusDamage = RarityBonusPropsRow->BonusDamage;
 			RarityBonusHeadshotDamage = RarityBonusPropsRow->BonusHeadshotDamage;
+			RarityCriticalChance = RarityBonusPropsRow->CriticalChance;
+			RarityCriticalMultiplier = RarityBonusPropsRow->CriticalDamageMultiplier;
 		}
 	}
 
@@ -256,4 +258,24 @@ void AWeapon::RotateWhenOnPickup()
 
 		SetActorRotation(NewRotation, ETeleportType::None);
 	}
+}
+
+bool AWeapon::CanCriticalHit()
+{
+	float ChanceRange = FMath::RandRange(0.f, 100.f);
+	bool CanCrit = (ChanceRange + RarityCriticalChance > 100.f) ? true : false;
+
+	return CanCrit;
+}
+
+float AWeapon::GetCriticalHit(bool bCanCriticalHit, float NoCritDamage)
+{
+	if (bCanCriticalHit)
+	{
+		float CritMultiplier = FMath::RandRange(1.f, RarityCriticalMultiplier * 1.0f);
+		float CritDamage = NoCritDamage * FMath::RandRange(1.f, RarityCriticalMultiplier * 1.0f);
+		
+		return CritDamage;
+	}
+	else return NoCritDamage;
 }

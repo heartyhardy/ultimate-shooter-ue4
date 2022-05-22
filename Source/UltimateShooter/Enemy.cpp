@@ -164,7 +164,7 @@ void AEnemy::ShowHealthBar_Implementation()
 
 void AEnemy::ShowEmoteBubble_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("SHOW EMOTE BUBBLE IMPL"));
+	//UE_LOG(LogTemp, Warning, TEXT("SHOW EMOTE BUBBLE IMPL"));
 	GetWorldTimerManager().ClearTimer(EmoteBubbleTimer);
 	GetWorldTimerManager().SetTimer(
 		EmoteBubbleTimer,
@@ -699,7 +699,11 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	if (EnemyController)
 	{
 		// Setting this Key in blackboard so the enemy can chase!
-		EnemyController->GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), DamageCauser);
+		auto Character = Cast<AShooterCharacter>(EnemyController->GetBlackboardComponent()->GetValueAsObject(FName(TEXT("TargetActor"))));
+		if (!Character)
+		{
+			EnemyController->GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), DamageCauser);
+		}
 	}
 
 	if (Health - DamageAmount <= 0.f)

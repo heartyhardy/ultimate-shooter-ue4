@@ -1551,36 +1551,51 @@ void AShooterCharacter::SendBullet()
 				if (HitEnemy)
 				{
 					int32 Damage{};
+					int32 CriticalDamage{};
+					bool bCriticalHit{};
+
 					// Check Headshots
 					if (BeamHitResult.BoneName.ToString() == HitEnemy->GetHeadBone())
 					{
-						// Apply Headshot dmg
-						Damage = EquippedWeapon->GetHeadshotDamage() + EquippedWeapon->GetRarityBonusHeadshotDamage() + BaseDamageModifier;
+						// Apply Headshot dmg						
+						Damage = EquippedWeapon->GetHeadshotDamage() + EquippedWeapon->GetRarityBonusHeadshotDamage();
+						bCriticalHit = EquippedWeapon->CanCriticalHit();
+						CriticalDamage = EquippedWeapon->GetCriticalHit(bCriticalHit, Damage) + BaseDamageModifier;
+
 						UGameplayStatics::ApplyDamage(
 							BeamHitResult.GetActor(),
-							Damage, // For now
+							CriticalDamage, // For now
 							GetController(),
 							this,
 							UDamageType::StaticClass()
 						);
 
 						// Show Headshot Hit Numbers
-						HitEnemy->ShowHitNumber(Damage, BeamHitResult.Location, true);
+						HitEnemy->ShowHitNumber(CriticalDamage, BeamHitResult.Location, bCriticalHit ? false : true , bCriticalHit);
+
+						UE_LOG(LogTemp, Warning, TEXT("IS CRIT: %s"), (bCriticalHit) ? TEXT("TRUE") : TEXT("FALSE"));
+						UE_LOG(LogTemp, Warning, TEXT("CRIT DAMAGE: %d"), CriticalDamage);
 					}
 					else
 					{
 						// Apply Bodyshot damage
-						Damage = EquippedWeapon->GetDamage() + EquippedWeapon->GetRarityBonusDamage() + BaseDamageModifier;
+						Damage = EquippedWeapon->GetDamage() + EquippedWeapon->GetRarityBonusDamage();
+						bCriticalHit = EquippedWeapon->CanCriticalHit();
+						CriticalDamage = EquippedWeapon->GetCriticalHit(bCriticalHit, Damage) + BaseDamageModifier;
+
 						UGameplayStatics::ApplyDamage(
 							BeamHitResult.GetActor(),
-							Damage, // For now
+							CriticalDamage, // For now
 							GetController(),
 							this,
 							UDamageType::StaticClass()
 						);
 
 						// Show Hit Numbers
-						HitEnemy->ShowHitNumber(Damage, BeamHitResult.Location, false);
+						HitEnemy->ShowHitNumber(CriticalDamage, BeamHitResult.Location, false, bCriticalHit);
+
+						UE_LOG(LogTemp, Warning, TEXT("IS CRIT: %s"), (bCriticalHit) ? TEXT("TRUE") : TEXT("FALSE"));
+						UE_LOG(LogTemp, Warning, TEXT("CRIT DAMAGE: %d"), CriticalDamage);
 					}
 				}
 			}

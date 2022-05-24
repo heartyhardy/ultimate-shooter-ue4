@@ -272,6 +272,12 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		void PlayPickupExpireSound();
 
+	UFUNCTION(BlueprintCallable)
+		void ApplyBulletTime(float Cooldown, float TimeDilation);
+
+	UFUNCTION(BlueprintCallable)
+		void ResetBulletTime();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -647,6 +653,15 @@ private:
 	float CurrentSceneVignette;
 	float SlowMotionSceneVignette;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "10"))
+		float BulletTimeSceneFringe;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "10"))
+		float BulletTimeVignette;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		USoundCue* BulletTimeSlowSound;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		class USphereComponent* NoiseRangeSphere;
 
@@ -659,6 +674,8 @@ private:
 	float RejuvenationTimeout;
 
 	int32 ActivePersistentEffects;
+
+	FTimerHandle BulletTimeResetTimer;
 
 public:
 

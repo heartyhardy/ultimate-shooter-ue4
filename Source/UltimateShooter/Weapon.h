@@ -118,6 +118,12 @@ struct FRarityBasedPropsTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "5"))
 	int32 CriticalDamageMultiplier;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "5"))
+	float BulletTimeModifier;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.3", ClampMax = ".7"))
+	float BulletTimeDilation;
 };
 
 UCLASS()
@@ -267,6 +273,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "1", ClampMax = "5"))
 		int32 RarityCriticalMultiplier;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "1", ClampMax = "5"))
+		float RarityBulletTimeModifier;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "1", ClampMax = "5"))
+		float RarityBulletTimeDilation;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		float NoiseRange;
 
@@ -315,4 +327,7 @@ public:
 
 	bool CanCriticalHit();
 	float GetCriticalHit(bool bCanCriticalHit, float NoCritDamage);
+
+	FORCEINLINE float GetRarityBulletTimeModifier() const { return RarityBulletTimeModifier; }
+	FORCEINLINE float GetRarityBulletTimeDilation() const { return RarityBulletTimeDilation; }
 };

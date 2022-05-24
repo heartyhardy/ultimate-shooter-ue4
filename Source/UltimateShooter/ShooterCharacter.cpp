@@ -107,6 +107,9 @@ AShooterCharacter::AShooterCharacter() :
 	CurrentSceneVignette(0.f),
 	SlowMotionSceneVignette(1.5f),
 	ExplosionSlowMoEmoteDelay(0.5f),
+	// Bullet Time
+	BulletTimeSceneFringe(4.5f),
+	BulletTimeVignette(5.f),
 	// Damage Modifiers
 	BaseDamageModifier(0.f),
 	MaxBaseDamageModifier(100.f),
@@ -504,6 +507,42 @@ void AShooterCharacter::PlayPickupExpireSound()
 			PickupExpireSound
 		);
 	}
+}
+
+void AShooterCharacter::ApplyBulletTime(float Cooldown, float TimeDilation)
+{
+	// Increase time dilation
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeDilation);
+	SetSceneFringe(BulletTimeSceneFringe);
+	SetSceneVignette(BulletTimeVignette);
+
+	if (!GetWorldTimerManager().IsTimerActive(BulletTimeResetTimer))
+	{
+		// Play slow-mo sound
+		// TODO: need to replace this
+		if (BulletTimeSlowSound)
+		{
+			UGameplayStatics::PlaySound2D(
+				GetWorld(),
+				BulletTimeSlowSound
+			);
+		}
+
+		GetWorldTimerManager().ClearTimer(BulletTimeResetTimer);
+		GetWorldTimerManager().SetTimer(
+			BulletTimeResetTimer,
+			this,
+			&ThisClass::ResetBulletTime,
+			Cooldown
+		);	
+	}
+}
+
+void AShooterCharacter::ResetBulletTime()
+{
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+	SetSceneFringe(DefaultSceneFringe, false);
+	SetSceneVignette(0.f, false);
 }
 
 void AShooterCharacter::AlertEnemiesInNoiseRange(TArray<AActor*> EnemiesInRange)
@@ -980,10 +1019,10 @@ void AShooterCharacter::SetSceneFringe(float Amount, bool bOverride)
 {
 	bSlowMotion = bOverride;
 
-	if (!bOverride)
-	{
-		SlowMotionSceneFringe = Amount;
-	}
+	//if (!bOverride)
+	//{
+	SlowMotionSceneFringe = Amount;
+	//}
 
 	if (!bOverride && CurrentSceneFringe > 0.1f) return;
 
@@ -994,7 +1033,7 @@ void AShooterCharacter::SetSceneFringe(float Amount, bool bOverride)
 		if (GameState->GetDefaultScreenFringe() > 0.f && GameState->GetScreenFringeEnabled())
 		{
 			GetFollowCamera()->PostProcessSettings.bOverride_SceneFringeIntensity = true;
-			GetFollowCamera()->PostProcessSettings.SceneFringeIntensity = GameState->GetDefaultScreenFringe();
+			GetFollowCamera()->PostProcessSettings.SceneFringeIntensity = DefaultSceneFringe;
 		}
 		else
 		{
@@ -1562,6 +1601,15 @@ void AShooterCharacter::SendBullet()
 						bCriticalHit = EquippedWeapon->CanCriticalHit();
 						CriticalDamage = EquippedWeapon->GetCriticalHit(bCriticalHit, Damage) + BaseDamageModifier;
 
+						// Apply Bullet Time
+						if (bCriticalHit)
+						{
+							ApplyBulletTime(
+								EquippedWeapon->GetRarityBulletTimeModifier(),
+								EquippedWeapon->GetRarityBulletTimeDilation()
+							);
+						}
+
 						UGameplayStatics::ApplyDamage(
 							BeamHitResult.GetActor(),
 							CriticalDamage, // For now
@@ -1573,8 +1621,8 @@ void AShooterCharacter::SendBullet()
 						// Show Headshot Hit Numbers
 						HitEnemy->ShowHitNumber(CriticalDamage, BeamHitResult.Location, bCriticalHit ? false : true , bCriticalHit);
 
-						UE_LOG(LogTemp, Warning, TEXT("IS CRIT: %s"), (bCriticalHit) ? TEXT("TRUE") : TEXT("FALSE"));
-						UE_LOG(LogTemp, Warning, TEXT("CRIT DAMAGE: %d"), CriticalDamage);
+						//UE_LOG(LogTemp, Warning, TEXT("IS CRIT: %s"), (bCriticalHit) ? TEXT("TRUE") : TEXT("FALSE"));
+						//UE_LOG(LogTemp, Warning, TEXT("CRIT DAMAGE: %d"), CriticalDamage);
 					}
 					else
 					{
@@ -1582,6 +1630,15 @@ void AShooterCharacter::SendBullet()
 						Damage = EquippedWeapon->GetDamage() + EquippedWeapon->GetRarityBonusDamage();
 						bCriticalHit = EquippedWeapon->CanCriticalHit();
 						CriticalDamage = EquippedWeapon->GetCriticalHit(bCriticalHit, Damage) + BaseDamageModifier;
+
+						// Apply Bullet Time
+						if (bCriticalHit)
+						{
+							ApplyBulletTime(
+								EquippedWeapon->GetRarityBulletTimeModifier(),
+								EquippedWeapon->GetRarityBulletTimeDilation()
+							);
+						}
 
 						UGameplayStatics::ApplyDamage(
 							BeamHitResult.GetActor(),
@@ -1594,8 +1651,8 @@ void AShooterCharacter::SendBullet()
 						// Show Hit Numbers
 						HitEnemy->ShowHitNumber(CriticalDamage, BeamHitResult.Location, false, bCriticalHit);
 
-						UE_LOG(LogTemp, Warning, TEXT("IS CRIT: %s"), (bCriticalHit) ? TEXT("TRUE") : TEXT("FALSE"));
-						UE_LOG(LogTemp, Warning, TEXT("CRIT DAMAGE: %d"), CriticalDamage);
+						//UE_LOG(LogTemp, Warning, TEXT("IS CRIT: %s"), (bCriticalHit) ? TEXT("TRUE") : TEXT("FALSE"));
+						//UE_LOG(LogTemp, Warning, TEXT("CRIT DAMAGE: %d"), CriticalDamage);
 					}
 				}
 			}

@@ -600,7 +600,7 @@ void AEnemy::ApplyExplosiveSlowMotion(AActor* DamageCauser)
 		{
 			// TODO: Slow Motion Emote
 			Shooter->SetSceneFringe(3.0f);
-			Shooter->SetSceneVignette(1.5f);
+			Shooter->SetSceneVignette(1.f);
 			Shooter->StartExplosionSlowMoEmote();
 		}
 
@@ -624,7 +624,7 @@ void AEnemy::ResetExplosiveSlowMotion()
 	if (Shooter)
 	{
 		Shooter->SetSceneFringe(3.0f, false); //Value not used
-		Shooter->SetSceneVignette(1.5f, false);
+		Shooter->SetSceneVignette(1.f, false);
 	}
 }
 

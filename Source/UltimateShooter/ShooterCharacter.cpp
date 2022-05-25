@@ -108,8 +108,8 @@ AShooterCharacter::AShooterCharacter() :
 	SlowMotionSceneVignette(1.5f),
 	ExplosionSlowMoEmoteDelay(0.5f),
 	// Bullet Time
-	BulletTimeSceneFringe(4.5f),
-	BulletTimeVignette(5.f),
+	BulletTimeSceneFringe(5.f),
+	BulletTimeVignette(1.f),
 	// Damage Modifiers
 	BaseDamageModifier(0.f),
 	MaxBaseDamageModifier(100.f),
@@ -528,6 +528,9 @@ void AShooterCharacter::ApplyBulletTime(float Cooldown, float TimeDilation)
 			);
 		}
 
+		// Emote
+		PlayCriticalHitEmote();
+
 		GetWorldTimerManager().ClearTimer(BulletTimeResetTimer);
 		GetWorldTimerManager().SetTimer(
 			BulletTimeResetTimer,
@@ -543,6 +546,20 @@ void AShooterCharacter::ResetBulletTime()
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 	SetSceneFringe(DefaultSceneFringe, false);
 	SetSceneVignette(0.f, false);
+}
+
+void AShooterCharacter::PlayCriticalHitEmote()
+{
+	const float EmoteChance = FMath::FRandRange(0.f, 1.f);
+
+	if (BulletTimeCriticalHitEmote && EmoteChance > 0.2f)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			BulletTimeCriticalHitEmote,
+			GetActorLocation()
+		);
+	}
 }
 
 void AShooterCharacter::AlertEnemiesInNoiseRange(TArray<AActor*> EnemiesInRange)
@@ -1604,6 +1621,7 @@ void AShooterCharacter::SendBullet()
 						// Apply Bullet Time
 						if (bCriticalHit)
 						{
+							PlayBulletTimeCriticalHitShake(GetActorLocation());
 							ApplyBulletTime(
 								EquippedWeapon->GetRarityBulletTimeModifier(),
 								EquippedWeapon->GetRarityBulletTimeDilation()
@@ -1634,6 +1652,7 @@ void AShooterCharacter::SendBullet()
 						// Apply Bullet Time
 						if (bCriticalHit)
 						{
+							PlayBulletTimeCriticalHitShake(GetActorLocation());
 							ApplyBulletTime(
 								EquippedWeapon->GetRarityBulletTimeModifier(),
 								EquippedWeapon->GetRarityBulletTimeDilation()

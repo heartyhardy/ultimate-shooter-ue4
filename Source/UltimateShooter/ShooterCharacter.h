@@ -278,6 +278,11 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		void ResetBulletTime();
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void PlayBulletTimeCriticalHitShake(FVector HitLocation);
+
+	void PlayCriticalHitEmote();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -661,6 +666,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		USoundCue* BulletTimeSlowSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		USoundCue* BulletTimeCriticalHitEmote;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		class USphereComponent* NoiseRangeSphere;

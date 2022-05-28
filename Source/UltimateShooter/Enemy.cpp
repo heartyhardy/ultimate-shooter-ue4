@@ -269,7 +269,7 @@ void AEnemy::UpdateHitNumbers()
 
 void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!OtherActor) return;
+	if (bDying || !OtherActor) return;
 
 	auto Character = Cast<AShooterCharacter>(OtherActor);
 	if (Character)
@@ -287,6 +287,7 @@ void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 
 void AEnemy::ScoutSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (bDying) return;
 	if (!bScouting) return;
 	if (!OtherActor) return;
 
@@ -348,6 +349,9 @@ void AEnemy::ScoutSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 void AEnemy::SetStunned(bool Stunned)
 {
 	bStunned = Stunned;
+	
+	SetActorEnableCollision(Stunned ? false : true);
+
 	if (EnemyController)
 	{
 		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("Stunned"), Stunned);
@@ -356,7 +360,7 @@ void AEnemy::SetStunned(bool Stunned)
 
 void AEnemy::CombatSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!OtherActor) return;
+	if (bDying || !OtherActor) return;
 	auto Character = Cast<AShooterCharacter>(OtherActor);
 
 	if (Character)

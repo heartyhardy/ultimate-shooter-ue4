@@ -374,9 +374,6 @@ public:
 	virtual void BulletHit_Implementation(FHitResult HitResult, AActor* Shooter, AController* ShooterController) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	FORCEINLINE USphereComponent* GetAgroSphere() const { return AgroSphere; }
-	FORCEINLINE USphereComponent* GetCombatSphere() const { return CombatRangeSphere; }
-
 	FORCEINLINE FString GetHeadBone() const { return HeadBone; }
 	
 	UFUNCTION(BlueprintImplementableEvent)

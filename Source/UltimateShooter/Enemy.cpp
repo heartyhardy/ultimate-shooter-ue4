@@ -350,8 +350,6 @@ void AEnemy::SetStunned(bool Stunned)
 {
 	bStunned = Stunned;
 	
-	SetActorEnableCollision(Stunned ? false : true);
-
 	if (EnemyController)
 	{
 		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("Stunned"), Stunned);

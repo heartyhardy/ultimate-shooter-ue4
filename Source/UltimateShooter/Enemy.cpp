@@ -174,11 +174,18 @@ void AEnemy::ShowEmoteBubble_Implementation()
 	);
 }
 
-void AEnemy::Die()
+void AEnemy::Die(bool bForce)
 {
-	if (bDying) return;
+	if (!bForce && bDying) return;
 	
 	bDying = true;
+
+	//Unbind Overlap Events
+	AgroSphere->OnComponentBeginOverlap.RemoveAll(this);
+	CombatRangeSphere->OnComponentBeginOverlap.RemoveAll(this);
+	ScoutSphere->OnComponentBeginOverlap.RemoveAll(this);
+	LeftWeaponCollision->OnComponentBeginOverlap.RemoveAll(this);
+	RightWeaponCollision->OnComponentBeginOverlap.RemoveAll(this);
 
 	HideHealthBar();
 	HideEmoteBubble();
@@ -473,6 +480,7 @@ void AEnemy::OnRightWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 
 void AEnemy::ActivateLeftWeapon()
 {
+	if (bDying) return;
 	LeftWeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
@@ -483,6 +491,7 @@ void AEnemy::DeActivateLeftWeapon()
 
 void AEnemy::ActivateRightWeapon()
 {
+	if (bDying) return;
 	RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
@@ -493,6 +502,7 @@ void AEnemy::DeActivateRightWeapon()
 
 float AEnemy::DoDamage(AShooterCharacter* Victim)
 {
+	if (bDying) return 0.f;
 	if (!Victim) return 0.f;
 
 	const float AbsoluteDamage = UGameplayStatics::ApplyDamage(
@@ -740,6 +750,11 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 
 void AEnemy::AlertEnemy()
 {
-	ShowEmoteBubble();
+	// For Lurkers this has to be TRUE
+	// TODO: Maybe set this TRUE to all enemies at night?
+	if (!bSilent)
+	{
+		ShowEmoteBubble();
+	}
 }
 

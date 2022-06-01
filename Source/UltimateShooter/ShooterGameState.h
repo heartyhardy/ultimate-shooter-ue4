@@ -15,20 +15,30 @@ class ULTIMATESHOOTER_API AShooterGameState : public AGameStateBase
 	GENERATED_BODY()
 	
 private:
+
+	/** Noise modifier affects how monsters react to the bullet sounds */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = Level, meta = (AllowPrivateAccess = "true"))
 		float LevelNoiseModifier = 1.0f;
 
+	/** Global SceneFringe State */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = Effects, meta = (AllowPrivateAccess = "true"))
-		bool bScreenFringeEnabled = true;
+		bool bSceneFringeEnabled = true;
 
+	/** Default Scene Fringe Intensity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = Effects, meta = (AllowPrivateAccess = "true"))
-		float DefaultScreenFringe = 0.5f;
+		float DefaultSceneFringe = 0.5f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, category = Level, meta = (AllowPrivateAccess = true))
+		bool bDaytime = true;
 
 public:
 	FORCEINLINE float GetLevelNoiseModifier() const { return LevelNoiseModifier; }
 	FORCEINLINE void SetLevelNoiseModifier(float Amount) { LevelNoiseModifier = Amount; }
 
-	FORCEINLINE bool GetScreenFringeEnabled() const { return bScreenFringeEnabled; }
-	FORCEINLINE void SetScreenFingeEnabled(bool bEnabled) { bScreenFringeEnabled = bEnabled; }
-	FORCEINLINE float GetDefaultScreenFringe() const { return DefaultScreenFringe; }
+	FORCEINLINE bool GetSceneFringeEnabled() const { return bSceneFringeEnabled; }
+	FORCEINLINE void SetSceneFingeEnabled(bool bEnabled) { bSceneFringeEnabled = bEnabled; }
+	FORCEINLINE float GetDefaultSceneFringe() const { return DefaultSceneFringe; }
+
+	FORCEINLINE bool GetDaytime() const { return bDaytime; }
+	FORCEINLINE void SetDaytime(bool bDayNight) { bDaytime = bDayNight; }
 };

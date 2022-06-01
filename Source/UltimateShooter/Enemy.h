@@ -34,7 +34,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void HideEmoteBubble();
 
-	void Die();
+	UFUNCTION(BlueprintCallable)
+	void Die(bool bForce = false);
 
 	void PlayHitMontage(FName Section, float PlayRate = 1.0f);
 
@@ -247,6 +248,10 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Scout", meta = (AllowPrivateAccess = "true"))
 	bool bRaging;
 
+	/** Is this enemy attacking in silence? Many of the emotes and notifiers won't be shown to the player */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	bool bSilent;
+
 	/** Applies Only to SCOUTS! When Scouts spot a player, they grant a speed boost to Allies! */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scout", meta = (AllowPrivateAccess = "true"))
 	float ScoutMinWalkSpeedBoost;
@@ -322,6 +327,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* DeathMontage;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bDying;
 
 	FTimerHandle DeathTimer;

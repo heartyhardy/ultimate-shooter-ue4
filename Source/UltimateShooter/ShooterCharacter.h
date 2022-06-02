@@ -155,6 +155,7 @@ protected:
 	/** FireWeapon functions */
 	void PlayFireSound();
 	void SendBullet();
+	void PlayBulletTimeRefraction(FHitResult& BeamHitResult);
 	void PlayGunfireMontage();
 
 	/** Bound to R key */
@@ -669,6 +670,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		USoundCue* BulletTimeCriticalHitEmote;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		UParticleSystem* BulletTimeRefraction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		class USphereComponent* NoiseRangeSphere;

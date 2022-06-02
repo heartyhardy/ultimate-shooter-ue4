@@ -1626,6 +1626,8 @@ void AShooterCharacter::SendBullet()
 								EquippedWeapon->GetRarityBulletTimeModifier(),
 								EquippedWeapon->GetRarityBulletTimeDilation()
 							);
+
+							PlayBulletTimeRefraction(BeamHitResult);
 						}
 
 						UGameplayStatics::ApplyDamage(
@@ -1657,6 +1659,8 @@ void AShooterCharacter::SendBullet()
 								EquippedWeapon->GetRarityBulletTimeModifier(),
 								EquippedWeapon->GetRarityBulletTimeDilation()
 							);
+
+							PlayBulletTimeRefraction(BeamHitResult);
 						}
 
 						UGameplayStatics::ApplyDamage(
@@ -1694,6 +1698,18 @@ void AShooterCharacter::SendBullet()
 	}
 }
 
+void AShooterCharacter::PlayBulletTimeRefraction(FHitResult& BeamHitResult)
+{
+	if (BulletTimeRefraction)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			BulletTimeRefraction,
+			BeamHitResult.Location
+		);
+	}
+}
+
 void AShooterCharacter::PlayGunfireMontage()
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -1707,6 +1723,8 @@ void AShooterCharacter::PlayGunfireMontage()
 
 void AShooterCharacter::ReloadButtonPressed()
 {
+	// TODO: Should this go into a different button?
+	ResetBulletTime();
 	ReloadWeapon();
 }
 

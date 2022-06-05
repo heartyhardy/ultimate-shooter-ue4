@@ -108,6 +108,7 @@ AShooterCharacter::AShooterCharacter() :
 	SlowMotionSceneVignette(1.5f),
 	ExplosionSlowMoEmoteDelay(0.5f),
 	// Bullet Time
+	bBulletTimeActive(false),
 	BulletTimeSceneFringe(5.f),
 	BulletTimeVignette(1.f),
 	// Damage Modifiers
@@ -511,12 +512,13 @@ void AShooterCharacter::PlayPickupExpireSound()
 
 void AShooterCharacter::ApplyBulletTime(float Cooldown, float TimeDilation)
 {
+	bBulletTimeActive = true;
 	// Increase time dilation
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeDilation);
 	SetSceneFringe(BulletTimeSceneFringe);
 	SetSceneVignette(BulletTimeVignette);
 
-	if (!GetWorldTimerManager().IsTimerActive(BulletTimeResetTimer))
+	if (!GetWorldTimerManager().IsTimerActive(BulletTimePreResetTimer))
 	{
 		// Play slow-mo sound
 		// TODO: need to replace this
@@ -531,12 +533,12 @@ void AShooterCharacter::ApplyBulletTime(float Cooldown, float TimeDilation)
 		// Emote
 		PlayCriticalHitEmote();
 
-		GetWorldTimerManager().ClearTimer(BulletTimeResetTimer);
+		GetWorldTimerManager().ClearTimer(BulletTimePreResetTimer);
 		GetWorldTimerManager().SetTimer(
-			BulletTimeResetTimer,
+			BulletTimePreResetTimer,
 			this,
-			&ThisClass::ResetBulletTime,
-			Cooldown
+			&ThisClass::PreResetBulletTime,
+			Cooldown - BulletTimePreCooldown
 		);	
 	}
 }
@@ -546,6 +548,26 @@ void AShooterCharacter::ResetBulletTime()
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 	SetSceneFringe(DefaultSceneFringe, false);
 	SetSceneVignette(0.f, false);
+	bBulletTimeActive = false;
+}
+
+void AShooterCharacter::PreResetBulletTime()
+{
+	if (BulletTimeResetSound && bBulletTimeActive)
+	{
+		UGameplayStatics::PlaySound2D(
+			GetWorld(),
+			BulletTimeResetSound
+		);
+	}
+
+	GetWorldTimerManager().ClearTimer(BulletTimeResetTimer);
+	GetWorldTimerManager().SetTimer(
+		BulletTimeResetTimer,
+		this,
+		&ThisClass::ResetBulletTime,
+		BulletTimePreCooldown
+	);
 }
 
 void AShooterCharacter::PlayCriticalHitEmote()
@@ -1724,7 +1746,13 @@ void AShooterCharacter::PlayGunfireMontage()
 void AShooterCharacter::ReloadButtonPressed()
 {
 	// TODO: Should this go into a different button?
-	ResetBulletTime();
+	// Must Double Tap To Reload if in bullet time
+	if (bBulletTimeActive)
+	{
+		ResetBulletTime();
+		return;
+	}
+
 	ReloadWeapon();
 }
 

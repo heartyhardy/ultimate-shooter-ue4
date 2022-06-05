@@ -279,6 +279,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		void ResetBulletTime();
 
+	UFUNCTION(BlueprintCallable)
+		void PreResetBulletTime();
+
 	UFUNCTION(BlueprintImplementableEvent)
 		void PlayBulletTimeCriticalHitShake(FVector HitLocation);
 
@@ -659,9 +662,19 @@ private:
 	float CurrentSceneVignette;
 	float SlowMotionSceneVignette;
 
+	/** Is Bullet Time Active? */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		bool bBulletTimeActive;
+
+	/** Match the PRE-COOLDOWN to the AudioClip: BulletTimeResetSound */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		float BulletTimePreCooldown = 0.5f;
+
+	/** Bullet Time Scene Fringe Intensity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "10"))
 		float BulletTimeSceneFringe;
 
+	/** Bullet Time Vignette Effect Intensity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "10"))
 		float BulletTimeVignette;
 
@@ -669,8 +682,12 @@ private:
 		USoundCue* BulletTimeSlowSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		USoundCue* BulletTimeResetSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		USoundCue* BulletTimeCriticalHitEmote;
 
+	/** Bullet time Shockwave effect on the Target */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		UParticleSystem* BulletTimeRefraction;
 
@@ -687,6 +704,7 @@ private:
 
 	int32 ActivePersistentEffects;
 
+	FTimerHandle BulletTimePreResetTimer;
 	FTimerHandle BulletTimeResetTimer;
 
 public:

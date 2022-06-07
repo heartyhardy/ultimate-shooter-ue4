@@ -111,6 +111,12 @@ AShooterCharacter::AShooterCharacter() :
 	bBulletTimeActive(false),
 	BulletTimeSceneFringe(5.f),
 	BulletTimeVignette(1.f),
+	CurrentBulletTimeMoveSpeedBonus(0.f),
+	CurrentInterpedBulletTimeMoveSpeedBonus(0.f),
+	TargetBulletTimeMoveSpeed(0.f),
+	BulletTimeResetMoveSpeedCooldown(5.f),
+	bBulletTimeMoveSpeedInterping(false),
+	bBulletTimeMoveSpeedResetInterping(false),
 	// Damage Modifiers
 	BaseDamageModifier(0.f),
 	MaxBaseDamageModifier(100.f),
@@ -513,6 +519,10 @@ void AShooterCharacter::PlayPickupExpireSound()
 void AShooterCharacter::ApplyBulletTime(float Cooldown, float TimeDilation)
 {
 	bBulletTimeActive = true;
+	
+	// Cancel Previous BulletTime Speed Bonus
+	ForceResetBulletTimeSpeedBonus();
+
 	// Increase time dilation
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeDilation);
 	SetSceneFringe(BulletTimeSceneFringe);
@@ -545,6 +555,22 @@ void AShooterCharacter::ApplyBulletTime(float Cooldown, float TimeDilation)
 
 void AShooterCharacter::ResetBulletTime()
 {
+	GetWorldTimerManager().ClearTimer(BulletTimePreResetTimer);
+	GetWorldTimerManager().ClearTimer(BulletTimeResetTimer);
+
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+	SetSceneFringe(DefaultSceneFringe, false);
+	SetSceneVignette(0.f, false);
+	bBulletTimeActive = false;
+}
+
+void AShooterCharacter::ForceResetBulletTime()
+{
+	SetBulletTimeResetMoveSpeedBonus();
+
+	GetWorldTimerManager().ClearTimer(BulletTimePreResetTimer);
+	GetWorldTimerManager().ClearTimer(BulletTimeResetTimer);
+
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 	SetSceneFringe(DefaultSceneFringe, false);
 	SetSceneVignette(0.f, false);
@@ -570,6 +596,50 @@ void AShooterCharacter::PreResetBulletTime()
 	);
 }
 
+void AShooterCharacter::SetBulletTimeResetMoveSpeedBonus()
+{
+	// TODO: RESET ALL when WEAPON IS SWAPPED!!
+	if (bBulletTimeActive && EquippedWeapon)
+	{
+		ShowBulletTimeSpeedBoostFX();
+
+		CurrentBulletTimeMoveSpeedBonus = EquippedWeapon->GetRarityBulletTimeResetMoveSpeed();
+		TargetBulletTimeMoveSpeed = BaseMovementSpeed + CurrentBulletTimeMoveSpeedBonus;
+		bBulletTimeMoveSpeedInterping = true;
+
+		GetWorldTimerManager().ClearTimer(BulletTimeResetSpeedBonusTimer);
+		GetWorldTimerManager().SetTimer(
+			BulletTimeResetSpeedBonusTimer,
+			this,
+			&ThisClass::ResetBulletTimeMoveSpeedBonus,
+			BulletTimeResetMoveSpeedCooldown
+		);
+	}
+}
+
+void AShooterCharacter::ResetBulletTimeMoveSpeedBonus()
+{
+	// TODO: Reset Move Speed
+	if (!bBulletTimeMoveSpeedResetInterping && CurrentBulletTimeMoveSpeedBonus > 0.f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RESETTING MOVE SPEED..."));
+		TargetBulletTimeMoveSpeed = GetCharacterMovement()->MaxWalkSpeed - (CurrentBulletTimeMoveSpeedBonus - CurrentInterpedBulletTimeMoveSpeedBonus);
+		bBulletTimeMoveSpeedResetInterping = true;
+	}
+}
+
+void AShooterCharacter::ForceResetBulletTimeSpeedBonus()
+{
+	HideBulletTimeSpeedBoostFX();
+
+	GetCharacterMovement()->MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed - (CurrentBulletTimeMoveSpeedBonus - CurrentInterpedBulletTimeMoveSpeedBonus);
+	bBulletTimeMoveSpeedInterping = false;
+	bBulletTimeMoveSpeedResetInterping = false;
+	CurrentBulletTimeMoveSpeedBonus = 0.f;
+	CurrentInterpedBulletTimeMoveSpeedBonus = 0.f;
+	TargetBulletTimeMoveSpeed = 0.f;
+}
+
 void AShooterCharacter::PlayCriticalHitEmote()
 {
 	const float EmoteChance = FMath::FRandRange(0.f, 1.f);
@@ -581,6 +651,58 @@ void AShooterCharacter::PlayCriticalHitEmote()
 			BulletTimeCriticalHitEmote,
 			GetActorLocation()
 		);
+	}
+}
+
+void AShooterCharacter::InterpBulletTimeMoveSpeed(float DeltaTime)
+{
+	if (bBulletTimeMoveSpeedInterping) 
+	{
+		float CurrentSpeed = GetCharacterMovement()->MaxWalkSpeed;
+		float NewSpeed = FMath::FInterpTo(
+			CurrentSpeed,
+			TargetBulletTimeMoveSpeed,
+			DeltaTime,
+			10.f
+		);
+
+		CurrentInterpedBulletTimeMoveSpeedBonus = TargetBulletTimeMoveSpeed - NewSpeed;
+		UE_LOG(LogTemp, Warning, TEXT("MOVE SPEED BONUS: %f - %f - %f"), NewSpeed, TargetBulletTimeMoveSpeed, CurrentInterpedBulletTimeMoveSpeedBonus);
+
+		GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
+
+		if (NewSpeed >= TargetBulletTimeMoveSpeed)
+		{
+			bBulletTimeMoveSpeedInterping = false;
+		}
+	}
+}
+
+void AShooterCharacter::InterpBulletTimeResetMoveSpeed(float DeltaTime)
+{
+	if (bBulletTimeMoveSpeedResetInterping)
+	{
+		float CurrentSpeed = GetCharacterMovement()->MaxWalkSpeed;
+		float NewSpeed = FMath::FInterpTo(
+			CurrentSpeed,
+			TargetBulletTimeMoveSpeed,
+			DeltaTime,
+			10.f
+		);
+
+		GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
+
+		if (NewSpeed <= TargetBulletTimeMoveSpeed)
+		{
+
+			UE_LOG(LogTemp, Warning, TEXT("MOVE TRAILS ENDED!"));
+			HideBulletTimeSpeedBoostFX();
+
+			bBulletTimeMoveSpeedResetInterping = false;
+			CurrentBulletTimeMoveSpeedBonus = 0.f;
+			CurrentInterpedBulletTimeMoveSpeedBonus = 0.f;
+			TargetBulletTimeMoveSpeed = 0.f;
+		}
 	}
 }
 
@@ -626,7 +748,6 @@ void AShooterCharacter::BeginPlay()
 		GetFollowCamera()->PostProcessSettings.bOverride_SceneFringeIntensity = GameState->GetSceneFringeEnabled();
 		GetFollowCamera()->PostProcessSettings.SceneFringeIntensity = GameState->GetDefaultSceneFringe();
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Radius: %f"), NoiseRangeSphere->GetUnscaledSphereRadius());
 
 	// Spawn the default weapon and equip it
 	EquipWeapon(SpawnDefaultWeapon());
@@ -648,6 +769,9 @@ void AShooterCharacter::BeginPlay()
 
 	// Create Interplocations for each element in array
 	InitializeInterpLocations();
+
+	// Hide Speed Boost FX since they are active by default
+	HideBulletTimeSpeedBoostFX();
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -916,6 +1040,14 @@ void AShooterCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, int32 New
 		if (bAiming)
 		{
 			StopAiming();
+		}
+
+		if (bBulletTimeActive)
+		{
+			ResetBulletTime();
+		}
+		else {
+			ForceResetBulletTimeSpeedBonus();
 		}
 
 		auto OldEquippedWeapon = EquippedWeapon;
@@ -1749,7 +1881,7 @@ void AShooterCharacter::ReloadButtonPressed()
 	// Must Double Tap To Reload if in bullet time
 	if (bBulletTimeActive)
 	{
-		ResetBulletTime();
+		ForceResetBulletTime();
 		return;
 	}
 
@@ -1761,6 +1893,11 @@ void AShooterCharacter::ReloadWeapon()
 	if (CombatState != ECombatState::ECS_UnOccupied) return;
 
 	if (!EquippedWeapon) return;
+
+	if (bBulletTimeActive)
+	{
+		ResetBulletTime();
+	}
 
 	// Create a function if we have correct ammo type
 
@@ -1950,6 +2087,12 @@ void AShooterCharacter::Tick(float DeltaTime)
 
 	/** Handle Camera Zoom Interpolation when Aiming */
 	InterpCameraZoom(DeltaTime);
+
+	/** Handle BulletTimeMoveSpeedBonus Interping */
+	InterpBulletTimeMoveSpeed(DeltaTime);
+
+	/** Handle Resetting BulletTimeMoveSpeedBonus Interping */
+	InterpBulletTimeResetMoveSpeed(DeltaTime);
 
 	/** Setup Turn Rates */
 	SetupTurnRate();

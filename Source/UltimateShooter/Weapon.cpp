@@ -219,6 +219,7 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			RarityCriticalMultiplier = RarityBonusPropsRow->CriticalDamageMultiplier;
 			RarityBulletTimeModifier = RarityBonusPropsRow->BulletTimeModifier;
 			RarityBulletTimeDilation = RarityBonusPropsRow->BulletTimeDilation;
+			RarityBulletTimeResetMoveSpeed = RarityBonusPropsRow->BulletTimeResetMoveSpeed;
 		}
 	}
 

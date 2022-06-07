@@ -280,12 +280,33 @@ protected:
 		void ResetBulletTime();
 
 	UFUNCTION(BlueprintCallable)
+		void ForceResetBulletTime();
+
+	UFUNCTION(BlueprintCallable)
 		void PreResetBulletTime();
+
+	UFUNCTION(BlueprintCallable)
+		void SetBulletTimeResetMoveSpeedBonus();
+
+	UFUNCTION(BlueprintCallable)
+		void ResetBulletTimeMoveSpeedBonus();
+
+	UFUNCTION(BlueprintCallable)
+		void ForceResetBulletTimeSpeedBonus();
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void PlayBulletTimeCriticalHitShake(FVector HitLocation);
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void ShowBulletTimeSpeedBoostFX();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void HideBulletTimeSpeedBoostFX();
+
 	void PlayCriticalHitEmote();
+
+	void InterpBulletTimeMoveSpeed(float DeltaTime);
+	void InterpBulletTimeResetMoveSpeed(float DeltaTime);
 
 public:
 	// Called every frame
@@ -670,6 +691,28 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		float BulletTimePreCooldown = 0.5f;
 
+	/** Match the PRE-COOLDOWN to the AudioClip: BulletTimeResetSound */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		float BulletTimeResetMoveSpeedCooldown = 2.f;
+
+	/** Match the PRE-COOLDOWN to the AudioClip: BulletTimeResetSound */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		float CurrentBulletTimeMoveSpeedBonus;
+
+	/** Match the PRE-COOLDOWN to the AudioClip: BulletTimeResetSound */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		float CurrentInterpedBulletTimeMoveSpeedBonus;
+
+	/** Match the PRE-COOLDOWN to the AudioClip: BulletTimeResetSound */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		float TargetBulletTimeMoveSpeed;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		float bBulletTimeMoveSpeedInterping;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+		float bBulletTimeMoveSpeedResetInterping;
+
 	/** Bullet Time Scene Fringe Intensity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "10"))
 		float BulletTimeSceneFringe;
@@ -706,6 +749,7 @@ private:
 
 	FTimerHandle BulletTimePreResetTimer;
 	FTimerHandle BulletTimeResetTimer;
+	FTimerHandle BulletTimeResetSpeedBonusTimer;
 
 public:
 

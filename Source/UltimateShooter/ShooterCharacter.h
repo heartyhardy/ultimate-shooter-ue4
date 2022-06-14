@@ -751,6 +751,12 @@ private:
 	FTimerHandle BulletTimeResetTimer;
 	FTimerHandle BulletTimeResetSpeedBonusTimer;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Executions", meta = (AllowPrivateAccess = "true"))
+		bool  bLastHeadshotWasACrit = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Executions", meta = (AllowPrivateAccess = "true"))
+		class AEnemy* MarkedEnemyForExecution;
+
 public:
 
 	/** Returns Camera boom subobject **/

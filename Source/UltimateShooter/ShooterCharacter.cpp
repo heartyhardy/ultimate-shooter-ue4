@@ -1763,6 +1763,14 @@ void AShooterCharacter::SendBullet()
 					int32 Damage{};
 					int32 CriticalDamage{};
 					bool bCriticalHit{};
+					bool bExecution = false;
+
+					// Unmark enemy if targets are different
+					if (HitEnemy != MarkedEnemyForExecution)
+					{
+						MarkedEnemyForExecution = nullptr;
+						bLastHeadshotWasACrit = false;
+					}
 
 					// Check Headshots
 					if (BeamHitResult.BoneName.ToString() == HitEnemy->GetHeadBone())
@@ -1772,8 +1780,24 @@ void AShooterCharacter::SendBullet()
 						bCriticalHit = EquippedWeapon->CanCriticalHit();
 						CriticalDamage = EquippedWeapon->GetCriticalHit(bCriticalHit, Damage) + BaseDamageModifier;
 
+						if (bCriticalHit && !bLastHeadshotWasACrit)
+						{
+							// Mark Enemy for execution
+							bLastHeadshotWasACrit = true;
+							MarkedEnemyForExecution = HitEnemy;
+						}
+						else if (bLastHeadshotWasACrit && MarkedEnemyForExecution && MarkedEnemyForExecution == HitEnemy)
+						{
+							// Execute enemy
+							bLastHeadshotWasACrit = false;
+							MarkedEnemyForExecution = nullptr;
+							bExecution = true;
+							Damage = HitEnemy->GetHealth() + 1;
+							CriticalDamage = Damage;
+						}
+
 						// Apply Bullet Time
-						if (bCriticalHit)
+						if (bCriticalHit || bExecution)
 						{
 							PlayBulletTimeCriticalHitShake(GetActorLocation());
 							ApplyBulletTime(
@@ -1782,6 +1806,11 @@ void AShooterCharacter::SendBullet()
 							);
 
 							PlayBulletTimeRefraction(BeamHitResult);
+
+							if (bExecution)
+							{
+								UE_LOG(LogTemp, Warning, TEXT("ENEMY EXECUTED!"));
+							}
 						}
 
 						UGameplayStatics::ApplyDamage(
@@ -1794,12 +1823,11 @@ void AShooterCharacter::SendBullet()
 
 						// Show Headshot Hit Numbers
 						HitEnemy->ShowHitNumber(CriticalDamage, BeamHitResult.Location, bCriticalHit ? false : true , bCriticalHit);
-
-						//UE_LOG(LogTemp, Warning, TEXT("IS CRIT: %s"), (bCriticalHit) ? TEXT("TRUE") : TEXT("FALSE"));
-						//UE_LOG(LogTemp, Warning, TEXT("CRIT DAMAGE: %d"), CriticalDamage);
 					}
 					else
 					{
+						bLastHeadshotWasACrit = false;
+
 						// Apply Bodyshot damage
 						Damage = EquippedWeapon->GetDamage() + EquippedWeapon->GetRarityBonusDamage();
 						bCriticalHit = EquippedWeapon->CanCriticalHit();
@@ -1827,9 +1855,6 @@ void AShooterCharacter::SendBullet()
 
 						// Show Hit Numbers
 						HitEnemy->ShowHitNumber(CriticalDamage, BeamHitResult.Location, false, bCriticalHit);
-
-						//UE_LOG(LogTemp, Warning, TEXT("IS CRIT: %s"), (bCriticalHit) ? TEXT("TRUE") : TEXT("FALSE"));
-						//UE_LOG(LogTemp, Warning, TEXT("CRIT DAMAGE: %d"), CriticalDamage);
 					}
 				}
 			}

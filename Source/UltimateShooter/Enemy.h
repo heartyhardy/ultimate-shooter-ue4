@@ -390,4 +390,6 @@ public:
 	FORCEINLINE AEnemyController* GetEnemyController() const { return EnemyController; }
 
 	void AlertEnemy();
+
+	FORCEINLINE int32 GetHealth() const { return Health; }
 };

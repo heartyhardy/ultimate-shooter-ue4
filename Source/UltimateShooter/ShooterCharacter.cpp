@@ -27,6 +27,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/GameState.h"
 #include "ShooterGameState.h"
+#include "MarkedExecutionDamageType.h"
 
 
 // Sets default values
@@ -516,7 +517,7 @@ void AShooterCharacter::PlayPickupExpireSound()
 	}
 }
 
-void AShooterCharacter::ApplyBulletTime(float Cooldown, float TimeDilation)
+void AShooterCharacter::ApplyBulletTime(float Cooldown, float TimeDilation, bool BypassEmotes)
 {
 	bBulletTimeActive = true;
 	
@@ -541,7 +542,7 @@ void AShooterCharacter::ApplyBulletTime(float Cooldown, float TimeDilation)
 		}
 
 		// Emote
-		PlayCriticalHitEmote();
+		if (!BypassEmotes) PlayCriticalHitEmote();
 
 		GetWorldTimerManager().ClearTimer(BulletTimePreResetTimer);
 		GetWorldTimerManager().SetTimer(
@@ -703,6 +704,17 @@ void AShooterCharacter::InterpBulletTimeResetMoveSpeed(float DeltaTime)
 			CurrentInterpedBulletTimeMoveSpeedBonus = 0.f;
 			TargetBulletTimeMoveSpeed = 0.f;
 		}
+	}
+}
+
+void AShooterCharacter::PlayMarkedExecutionSound()
+{
+	if (MarkedExecutionSound)
+	{
+		UGameplayStatics::PlaySound2D(
+			GetWorld(),
+			MarkedExecutionSound
+		);
 	}
 }
 
@@ -1724,7 +1736,8 @@ void AShooterCharacter::SendBullet()
 	if (BarrelSocket)
 	{
 		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
-
+		
+		//Show muzzle flash
 		if (EquippedWeapon->GetMuzzleFlash())
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFlash(), SocketTransform);
@@ -1733,6 +1746,7 @@ void AShooterCharacter::SendBullet()
 		FHitResult BeamHitResult;
 		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
 
+		// Hit test validation
 		if (bBeamEnd)
 		{
 			/** Does hit actor implement BulletHitResult interface */
@@ -1762,6 +1776,7 @@ void AShooterCharacter::SendBullet()
 				{
 					int32 Damage{};
 					int32 CriticalDamage{};
+					int32 MaxAllowedExecutions{};
 					bool bCriticalHit{};
 					bool bExecution = false;
 
@@ -1777,40 +1792,49 @@ void AShooterCharacter::SendBullet()
 					{
 						// Apply Headshot dmg						
 						Damage = EquippedWeapon->GetHeadshotDamage() + EquippedWeapon->GetRarityBonusHeadshotDamage();
+						MaxAllowedExecutions = EquippedWeapon->GetRarityMaxChainedExecutions();
 						bCriticalHit = EquippedWeapon->CanCriticalHit();
 						CriticalDamage = EquippedWeapon->GetCriticalHit(bCriticalHit, Damage) + BaseDamageModifier;
 
-						if (bCriticalHit && !bLastHeadshotWasACrit)
+						if (!bInChainedExecution && bCriticalHit && !bLastHeadshotWasACrit)
 						{
 							// Mark Enemy for execution
 							bLastHeadshotWasACrit = true;
 							MarkedEnemyForExecution = HitEnemy;
 						}
-						else if (bLastHeadshotWasACrit && MarkedEnemyForExecution && MarkedEnemyForExecution == HitEnemy)
+						else if (!bInChainedExecution && bLastHeadshotWasACrit && MarkedEnemyForExecution && MarkedEnemyForExecution == HitEnemy)
 						{
 							// Execute enemy
 							bLastHeadshotWasACrit = false;
 							MarkedEnemyForExecution = nullptr;
 							bExecution = true;
+							bInChainedExecution = true;
+							RemainingChainedExecutions = MaxAllowedExecutions;
 							Damage = HitEnemy->GetHealth() + 1;
 							CriticalDamage = Damage;
 						}
+						else if (bInChainedExecution && RemainingChainedExecutions > 0)
+						{
+							Damage = HitEnemy->GetHealth() + 1;
+							CriticalDamage = Damage;
+							RemainingChainedExecutions = (RemainingChainedExecutions - 1) < 0 ? 0 : --RemainingChainedExecutions;
+						}
+						else if (bInChainedExecution && RemainingChainedExecutions <= 0)
+						{
+							bInChainedExecution = false;
+						}
 
 						// Apply Bullet Time
-						if (bCriticalHit || bExecution)
+						if (bCriticalHit || bExecution || bInChainedExecution)
 						{
 							PlayBulletTimeCriticalHitShake(GetActorLocation());
 							ApplyBulletTime(
 								EquippedWeapon->GetRarityBulletTimeModifier(),
-								EquippedWeapon->GetRarityBulletTimeDilation()
+								EquippedWeapon->GetRarityBulletTimeDilation(),
+								bExecution
 							);
 
 							PlayBulletTimeRefraction(BeamHitResult);
-
-							if (bExecution)
-							{
-								UE_LOG(LogTemp, Warning, TEXT("ENEMY EXECUTED!"));
-							}
 						}
 
 						UGameplayStatics::ApplyDamage(
@@ -1818,8 +1842,11 @@ void AShooterCharacter::SendBullet()
 							CriticalDamage, // For now
 							GetController(),
 							this,
-							UDamageType::StaticClass()
+							bExecution ? UMarkedExecutionDamageType::StaticClass() : UDamageType::StaticClass()
 						);
+
+						// Play Marked Execution Sound
+						if (bExecution) PlayMarkedExecutionSound();
 
 						// Show Headshot Hit Numbers
 						HitEnemy->ShowHitNumber(CriticalDamage, BeamHitResult.Location, bCriticalHit ? false : true , bCriticalHit);
@@ -1827,6 +1854,8 @@ void AShooterCharacter::SendBullet()
 					else
 					{
 						bLastHeadshotWasACrit = false;
+						bInChainedExecution = false;
+						RemainingChainedExecutions = 0;
 
 						// Apply Bodyshot damage
 						Damage = EquippedWeapon->GetDamage() + EquippedWeapon->GetRarityBonusDamage();

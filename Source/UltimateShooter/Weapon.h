@@ -127,6 +127,9 @@ struct FRarityBasedPropsTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "125"))
 	float BulletTimeResetMoveSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "10"))
+	int32 MaxChainedExecutions;
 };
 
 UCLASS()
@@ -284,6 +287,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "125"))
 		float RarityBulletTimeResetMoveSpeed;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "10"))
+	int32 RarityMaxChainedExecutions;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 		float NoiseRange;
@@ -337,4 +343,6 @@ public:
 	FORCEINLINE float GetRarityBulletTimeModifier() const { return RarityBulletTimeModifier; }
 	FORCEINLINE float GetRarityBulletTimeDilation() const { return RarityBulletTimeDilation; }
 	FORCEINLINE float GetRarityBulletTimeResetMoveSpeed() const { return RarityBulletTimeResetMoveSpeed; }
+	
+	FORCEINLINE int32 GetRarityMaxChainedExecutions() const { return RarityMaxChainedExecutions; }
 };

@@ -17,6 +17,7 @@
 #include "Explosive.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
+#include "MarkedExecutionDamageType.h"
 
 // Sets default values
 AEnemy::AEnemy() :
@@ -666,6 +667,20 @@ void AEnemy::PlayInitiateAmbushSound()
 	}
 }
 
+void AEnemy::PlayMarkedExecutionDamageVFX()
+{
+	if (MarkedExecutionEffectParticles)
+	{
+		auto HeadboneLocation = GetMesh()->GetBoneLocation(*HeadBone);
+
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			MarkedExecutionEffectParticles,
+			HeadboneLocation
+		);
+	}
+}
+
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
@@ -718,11 +733,18 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 		}
 	}
 
+	UMarkedExecutionDamageType* MarkedExecutionDamage = Cast<UMarkedExecutionDamageType>(DamageEvent.DamageTypeClass.Get()->GetDefaultObject());
+	if (MarkedExecutionDamage)
+	{
+		PlayMarkedExecutionDamageVFX();
+	}
+
 	if (Health - DamageAmount <= 0.f)
 	{
 		Health = 0.f;
 		GetCharacterMovement()->MaxWalkSpeed = 0.f;
 		
+		// If Damaged by Explosions
 		ApplyExplosiveSlowMotion(DamageCauser);
 		Die();
 	}

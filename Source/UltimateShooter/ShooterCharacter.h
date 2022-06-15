@@ -274,7 +274,7 @@ protected:
 		void PlayPickupExpireSound();
 
 	UFUNCTION(BlueprintCallable)
-		void ApplyBulletTime(float Cooldown, float TimeDilation);
+		void ApplyBulletTime(float Cooldown, float TimeDilation, bool BypassEmotes = false);
 
 	UFUNCTION(BlueprintCallable)
 		void ResetBulletTime();
@@ -307,6 +307,8 @@ protected:
 
 	void InterpBulletTimeMoveSpeed(float DeltaTime);
 	void InterpBulletTimeResetMoveSpeed(float DeltaTime);
+
+	void PlayMarkedExecutionSound();
 
 public:
 	// Called every frame
@@ -755,7 +757,16 @@ private:
 		bool  bLastHeadshotWasACrit = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Executions", meta = (AllowPrivateAccess = "true"))
+		bool bInChainedExecution;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Executions", meta = (AllowPrivateAccess = "true"))
 		class AEnemy* MarkedEnemyForExecution;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Executions", meta = (AllowPrivateAccess = "true"))
+		USoundCue* MarkedExecutionSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Executions", meta = (AllowPrivateAccess = "true"))
+		int32 RemainingChainedExecutions;
 
 public:
 

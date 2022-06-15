@@ -220,6 +220,7 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			RarityBulletTimeModifier = RarityBonusPropsRow->BulletTimeModifier;
 			RarityBulletTimeDilation = RarityBonusPropsRow->BulletTimeDilation;
 			RarityBulletTimeResetMoveSpeed = RarityBonusPropsRow->BulletTimeResetMoveSpeed;
+			RarityMaxChainedExecutions = RarityBonusPropsRow->MaxChainedExecutions;
 		}
 	}
 

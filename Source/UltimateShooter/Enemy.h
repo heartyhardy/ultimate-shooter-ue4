@@ -160,6 +160,8 @@ protected:
 	/** Play Enemy Detected Sound On Timer */
 	void PlayInitiateAmbushSound();
 
+	void PlayMarkedExecutionDamageVFX();
+
 private:
 
 	/** Particles to spawn when hit by player attacks */
@@ -370,6 +372,9 @@ private:
 	float InitiateAmbushSoundCooldown;
 
 	FTimerHandle InitiateAmbushSoundTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Executions", meta = (AllowPrivateAccess = "true"))
+		UParticleSystem* MarkedExecutionEffectParticles;
 
 public:	
 	// Called every frame

@@ -1831,7 +1831,7 @@ void AShooterCharacter::SendBullet()
 							ApplyBulletTime(
 								EquippedWeapon->GetRarityBulletTimeModifier(),
 								EquippedWeapon->GetRarityBulletTimeDilation(),
-								bExecution
+								bExecution || bInChainedExecution
 							);
 
 							PlayBulletTimeRefraction(BeamHitResult);
@@ -1842,11 +1842,11 @@ void AShooterCharacter::SendBullet()
 							CriticalDamage, // For now
 							GetController(),
 							this,
-							bExecution ? UMarkedExecutionDamageType::StaticClass() : UDamageType::StaticClass()
+							(bExecution || bInChainedExecution) ? UMarkedExecutionDamageType::StaticClass() : UDamageType::StaticClass()
 						);
 
 						// Play Marked Execution Sound
-						if (bExecution) PlayMarkedExecutionSound();
+						if (bExecution || bInChainedExecution) PlayMarkedExecutionSound();
 
 						// Show Headshot Hit Numbers
 						HitEnemy->ShowHitNumber(CriticalDamage, BeamHitResult.Location, bCriticalHit ? false : true , bCriticalHit);

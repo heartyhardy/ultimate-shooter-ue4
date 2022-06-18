@@ -181,6 +181,9 @@ void AEnemy::Die(bool bForce)
 	
 	bDying = true;
 
+	// Stops shots from hitting the corpse
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
+
 	//Unbind Overlap Events
 	AgroSphere->OnComponentBeginOverlap.RemoveAll(this);
 	CombatRangeSphere->OnComponentBeginOverlap.RemoveAll(this);

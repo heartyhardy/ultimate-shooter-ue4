@@ -197,7 +197,12 @@ void AEnemy::Die(bool bForce)
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance)
 	{
+		
+		int32 RandAnimation = FMath::RandRange(1, 10);
+		FName RandSection = RandAnimation > 5 ? FName(TEXT("DeathA")) : FName(TEXT("DeathB"));
+
 		AnimInstance->Montage_Play(DeathMontage);
+		AnimInstance->Montage_JumpToSection(RandSection);
 		
 		if (DeathSound)
 		{
@@ -378,7 +383,6 @@ void AEnemy::CombatSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* Ot
 		if (EnemyController)
 		{
 			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), true);
-			UE_LOG(LogTemp, Warning, TEXT("IN RANGE: %s"), EnemyController->GetBlackboardComponent()->GetValueAsBool(TEXT("InAttackRange")) ? TEXT("TRUE") : TEXT("FALSE"));
 		}
 	}
 }
@@ -395,7 +399,6 @@ void AEnemy::CombatSphereEndOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 		if (EnemyController)
 		{
 			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), false);
-			UE_LOG(LogTemp, Warning, TEXT("IN RANGE: %s"), EnemyController->GetBlackboardComponent()->GetValueAsBool(TEXT("InAttackRange")) ? TEXT("TRUE") : TEXT("FALSE"));
 		}
 	}
 }

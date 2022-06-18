@@ -880,7 +880,9 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, 
 	// Perform Gun barrel trace
 	FVector WeaponTraceStart{ MuzzleSocketLocation };
 	FVector StartToEnd{ BeamEndLocation - MuzzleSocketLocation };
-	FVector WeaponTraceEnd{ MuzzleSocketLocation + StartToEnd * 1.25f }; // Extend the 2nd Trace by 1.25 Times to hit obstacles properly
+	FVector WeaponTraceEnd{ MuzzleSocketLocation + StartToEnd * 5.25f }; // Extend the 2nd Trace by 1.25 Times to hit obstacles properly
+
+	UE_LOG(LogTemp, Warning, TEXT("Muzzle: %s"), *WeaponTraceStart.ToString());
 
 	GetWorld()->LineTraceSingleByChannel(
 		OutHitResult,
@@ -1527,6 +1529,23 @@ bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& 
 
 		if (OutHitResult.bBlockingHit)
 		{
+			const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
+
+			if (BarrelSocket)
+			{
+				const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
+				FVector NormalizedDirection = SocketTransform.GetLocation() - OutHitResult.Location;
+				NormalizedDirection.Normalize();
+
+				float BarrelToHitDotProduct = FVector::DotProduct(NormalizedDirection, GetActorForwardVector());
+
+				UE_LOG(LogTemp, Warning, TEXT("Actor FORWARD: %s"), *GetActorForwardVector().ToString());
+				UE_LOG(LogTemp, Warning, TEXT("Actor to Enemy: %s"), *NormalizedDirection.ToString());
+				UE_LOG(LogTemp, Warning, TEXT("Dot Product: %f"), BarrelToHitDotProduct);
+
+				if (BarrelToHitDotProduct > 0.f) return false;
+			}
+			
 			OutHitLocation = OutHitResult.Location;
 			return true;
 		}

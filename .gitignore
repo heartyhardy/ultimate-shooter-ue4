@@ -104,5 +104,8 @@ Content/A_Surface_Footstep/*
 Content/KiteDemo/*
 Content/STF
 
+#Megascans
+Content/Megascans/*
+
 #Large Maps
 Content/_Game/Maps/Closed_Alpha_Demo_Map.umap

@@ -561,7 +561,7 @@ void AShooterCharacter::ResetBulletTime()
 
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 	SetSceneFringe(DefaultSceneFringe, false);
-	SetSceneVignette(0.f, false);
+	SetSceneVignette(DefaultSceneVignette, false);
 	bBulletTimeActive = false;
 }
 
@@ -574,7 +574,7 @@ void AShooterCharacter::ForceResetBulletTime()
 
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 	SetSceneFringe(DefaultSceneFringe, false);
-	SetSceneVignette(0.f, false);
+	SetSceneVignette(DefaultSceneVignette, false);
 	bBulletTimeActive = false;
 }
 
@@ -755,6 +755,8 @@ void AShooterCharacter::BeginPlay()
 
 		// Set Screen Fringe
 		DefaultSceneFringe = GameState->GetDefaultSceneFringe();
+		// Set Vignette
+		DefaultSceneVignette = GameState->GetDefaultVignette();
 
 		// Turn on Follow Camera ScreenFringe ON by Default
 		GetFollowCamera()->PostProcessSettings.bOverride_SceneFringeIntensity = GameState->GetSceneFringeEnabled();
@@ -1231,13 +1233,25 @@ void AShooterCharacter::SetSceneVignette(float Amount, bool bOverride)
 {
 	bSlowMotion = bOverride;
 
-	if (!bOverride)
-	{
-		SlowMotionSceneVignette = Amount;
-	}
+	//if (!bOverride)
+	//{
+	SlowMotionSceneVignette = Amount;
+	//}
 
-	if (!bOverride && CurrentSceneVignette > 0.1f) return;
-	GetFollowCamera()->PostProcessSettings.bOverride_VignetteIntensity = bOverride;
+	auto* GameState = Cast<AShooterGameState>(GetWorld()->GetGameState());
+
+	if (GameState)
+	{
+		if (GameState->GetDefaultVignette() > 0.f && GameState->GetVignetteEnabled())
+		{
+			GetFollowCamera()->PostProcessSettings.bOverride_VignetteIntensity = true;
+			GetFollowCamera()->PostProcessSettings.VignetteIntensity = DefaultSceneVignette;
+		}
+		else
+		{
+			GetFollowCamera()->PostProcessSettings.bOverride_VignetteIntensity = bOverride;
+		}
+	}
 }
 
 void AShooterCharacter::StartExplosionSlowMoEmote()

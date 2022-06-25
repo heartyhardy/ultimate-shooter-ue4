@@ -102,6 +102,10 @@ protected:
 	/** Interpolate Camera Zoom when aiming is ON/OFF */
 	void InterpCameraZoom(float DeltaTime);
 
+	/** Interpolate Camera Roll when turning(Yaw) */
+	void InterpCameraRoll(float DeltaTime);
+	void InterpBackCameraRoll(float DeltaTime);
+
 	/** Setup Base Turn/LookUp Rates when Aiming ON/OFF */
 	void SetupTurnRate();
 
@@ -381,6 +385,26 @@ private:
 	/** Determine the speed of camera zoom in and out */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		float CameraInterpSpeed;
+
+	/** Is Camera Roll is currently interping */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		bool bCameraRoll = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		bool bInterpBackCameraRoll = false;
+
+	/** Maximum amount of Camera Roll on Yaw threshold */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		float MaxCameraRoll;
+
+	/** Yaw Threshold to trigger Camera Roll Interping */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		float InterpYawThreshold;
+
+	/** Current and Previous YAW values of the Character */
+	float CameraRollPreviousYaw = 0.f;
+	float CameraRollCurrentYaw = 0.f;
+	float CurrentCameraRoll;
 
 	/** Dynamic Crosshair Size Factor */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))

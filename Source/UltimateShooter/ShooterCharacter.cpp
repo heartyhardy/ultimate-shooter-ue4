@@ -39,6 +39,7 @@ AShooterCharacter::AShooterCharacter() :
 	HipLookUpRate(60.f),
 	AimTurnRate(20.f),
 	AimLookUpRate(20.f),
+	MaxCameraRoll(15.f),
 	// Mouse Turn and LookUp rates
 	MouseHipTurnRate(1.f),
 	MouseHipLookUpRate(1.f),
@@ -1348,6 +1349,56 @@ void AShooterCharacter::InterpCameraZoom(float DeltaTime)
 	FollowCamera->SetFieldOfView(CurrentCameraFOV);
 }
 
+void AShooterCharacter::InterpCameraRoll(float DeltaTime)
+{
+	if (bCameraRoll && !bInterpBackCameraRoll)
+	{
+		CurrentCameraRoll = FMath::FInterpTo(
+			CurrentCameraRoll,
+			MaxCameraRoll,
+			DeltaTime,
+			2.f
+		);
+
+		UE_LOG(LogTemp, Warning, TEXT("Current Interp Roll: %f"), CurrentCameraRoll);
+		UE_LOG(LogTemp, Warning, TEXT("Target Interp Roll: %f"), MaxCameraRoll);
+
+		if (FMath::Abs(CurrentCameraRoll) < FMath::Abs(MaxCameraRoll) - 1.f)
+		{
+			FollowCamera->SetRelativeRotation(FRotator{ 0.f, 0.f, CurrentCameraRoll });
+		}
+		else
+		{
+			bInterpBackCameraRoll = true;
+		}
+
+	}
+}
+
+void AShooterCharacter::InterpBackCameraRoll(float DeltaTime)
+{
+	if (bInterpBackCameraRoll && bCameraRoll)
+	{
+		CurrentCameraRoll = FMath::FInterpTo(
+			CurrentCameraRoll,
+			0.f,
+			DeltaTime,
+			2.f
+		);
+
+		if (FMath::Abs(CurrentCameraRoll) > 1.f)
+		{
+			FollowCamera->SetRelativeRotation(FRotator{ 0.f, 0.f, CurrentCameraRoll });
+		}
+		else
+		{
+			CurrentCameraRoll = 0.f;
+			bInterpBackCameraRoll = false;
+			bCameraRoll = false;
+		}
+	}
+}
+
 void AShooterCharacter::SetupTurnRate()
 {
 	if (bAiming)
@@ -2169,6 +2220,46 @@ void AShooterCharacter::InterpCapsuleHalfHeight(float DeltaTime)
 void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	//UE_LOG(LogTemp, Warning, TEXT("Velocity: %f"), GetCharacterMovement()->Velocity.X);
+	//UE_LOG(LogTemp, Warning, TEXT("Actor YAW: %f"), GetActorRotation().Yaw);
+
+	#pragma region Work In Progress
+
+
+	CameraRollPreviousYaw = CameraRollCurrentYaw;
+	CameraRollCurrentYaw = GetControlRotation().Yaw;
+
+
+	if (!bCameraRoll && FMath::Abs(CameraRollPreviousYaw - CameraRollCurrentYaw) > 10.f && FMath::Abs(GetCharacterMovement()->Velocity.X) > 200.f)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Previous YAW: %f"), CameraRollPreviousYaw);
+		//UE_LOG(LogTemp, Warning, TEXT("Current YAW: %f"), CameraRollCurrentYaw);
+
+		if (CameraRollPreviousYaw - CameraRollCurrentYaw > 0.f)
+		{
+			bCameraRoll = true;
+			if (MaxCameraRoll > 0.f)
+			{
+				MaxCameraRoll = MaxCameraRoll * -1.0f; //+
+			}
+		}
+		else
+		{
+			bCameraRoll = true;
+			if (MaxCameraRoll < 0.f)
+			{
+				MaxCameraRoll = MaxCameraRoll * -1.0f; //+
+			}
+		}
+		//FollowCamera->AddRelativeRotation(FRotator{0.f,0.f, 5.f});
+
+		#pragma endregion
+
+	}
+
+	InterpCameraRoll(DeltaTime);
+	InterpBackCameraRoll(DeltaTime);
 
 	InterpSlowMoPostProcessEffects(DeltaTime);
 

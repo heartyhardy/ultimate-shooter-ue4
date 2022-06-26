@@ -314,6 +314,10 @@ protected:
 
 	void PlayMarkedExecutionSound();
 
+	void TriggerCameraRoll();
+
+	void ResetCameraRollCooldown();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -394,17 +398,28 @@ private:
 		bool bInterpBackCameraRoll = false;
 
 	/** Maximum amount of Camera Roll on Yaw threshold */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		float MaxCameraRoll;
 
 	/** Yaw Threshold to trigger Camera Roll Interping */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		float InterpYawThreshold;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		float CameraRollCooldown;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		bool bCameraRollOnCooldown;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		float InterpMovementSpeedThreshold;
 
 	/** Current and Previous YAW values of the Character */
 	float CameraRollPreviousYaw = 0.f;
 	float CameraRollCurrentYaw = 0.f;
 	float CurrentCameraRoll;
+
+	FTimerHandle CameraRollCooldownTimer;
 
 	/** Dynamic Crosshair Size Factor */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))

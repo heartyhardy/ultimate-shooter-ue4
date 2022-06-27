@@ -202,6 +202,9 @@ AShooterCharacter::AShooterCharacter() :
 
 float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	// Set Global Combat State to true if not already
+	SetGlobalCombatState();
+
 	// If Emoting Cancel it
 	if (bGeneralEmoting)
 	{
@@ -442,8 +445,10 @@ void AShooterCharacter::SetBonusDamageModifierTimed(float Damage, float Timeout)
 }
 
 void AShooterCharacter::SetBonusSpeedModifierTimed(float Speed, float Timeout)
-{
+{	
 	SetBonusBaseMovementSpeed(Speed);
+	ShowSpeedBonusTimedFX();
+
 	ActivePersistentEffects++;
 
 	PickupPersistentEffect->Activate();
@@ -1177,6 +1182,11 @@ void AShooterCharacter::SetBonusBaseMovementSpeed(float Amount)
 
 void AShooterCharacter::ResetBaseMovementSpeed()
 {
+	if (!bBulletTimeActive)
+	{
+		HideSpeedBonusTimedFX();
+	}
+
 	BaseMovementSpeed = DefaultBaseMovementSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
 
@@ -1981,6 +1991,8 @@ void AShooterCharacter::SendBullet()
 
 						// Show Hit Numbers
 						HitEnemy->ShowHitNumber(CriticalDamage, BeamHitResult.Location, false, bCriticalHit);
+
+						SetGlobalCombatState();
 					}
 				}
 			}
@@ -1999,6 +2011,36 @@ void AShooterCharacter::SendBullet()
 					Beam->SetVectorParameter(FName("Target"), BeamHitResult.Location);
 				}
 			}
+		}
+	}
+}
+
+bool AShooterCharacter::GetGlobalCombatState()
+{
+	auto* GameState = Cast<AShooterGameState>(GetWorld()->GetGameState());
+
+	if (GameState)
+	{
+		return GameState->GetIsInCombat();
+	}
+	return false;
+}
+
+void AShooterCharacter::SetGlobalCombatState()
+{
+	auto* GameState = Cast<AShooterGameState>(GetWorld()->GetGameState());
+
+	if (GameState && !GameState->GetIsInCombat())
+	{
+		GameState->SetIsInCombat(true);
+		if (!GetWorldTimerManager().IsTimerActive(CombatStateResetTimer))
+		{
+			GetWorldTimerManager().SetTimer(
+				CombatStateResetTimer,
+				this,
+				&ThisClass::ResetCombatState,
+				5.0f
+			);
 		}
 	}
 }
@@ -2234,6 +2276,19 @@ void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	auto* GameState = Cast<AShooterGameState>(GetWorld()->GetGameState());
+	if (GameState)
+	{
+		if (GameState->GetIsInCombat())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("IS IN COMBAT"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("NOT IN COMBAT"));
+		}
+	}
+
 
 	TriggerCameraRoll();
 
@@ -2267,6 +2322,7 @@ void AShooterCharacter::Tick(float DeltaTime)
 void AShooterCharacter::TriggerCameraRoll()
 {
 	if (bCameraRollOnCooldown) return;
+	if (!GetGlobalCombatState()) return; // Don't trigger if not in combat
 
 	CameraRollPreviousYaw = CameraRollCurrentYaw;
 	CameraRollCurrentYaw = GetControlRotation().Yaw;
@@ -2297,6 +2353,13 @@ void AShooterCharacter::TriggerCameraRoll()
 void AShooterCharacter::ResetCameraRollCooldown()
 {
 	bCameraRollOnCooldown = false;
+}
+
+// Resets the global game state's combat state
+void AShooterCharacter::ResetCombatState()
+{
+	auto* GameState = Cast<AShooterGameState>(GetWorld()->GetGameState());
+	GameState->SetIsInCombat(false);
 }
 
 // Called to bind functionality to input

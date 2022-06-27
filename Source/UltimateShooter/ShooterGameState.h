@@ -13,8 +13,15 @@ UCLASS()
 class ULTIMATESHOOTER_API AShooterGameState : public AGameStateBase
 {
 	GENERATED_BODY()
-	
+
+public:
+
+	AShooterGameState();
+
 private:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = Announcer, meta = (AllowPrivateAccess = "true"))
+		class AAnnouncer* Announcer;
 
 	/** Noise modifier affects how monsters react to the bullet sounds */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = Level, meta = (AllowPrivateAccess = "true"))
@@ -36,21 +43,19 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = Effects, meta = (AllowPrivateAccess = "true"))
 		float DefaultVignette = 0.0f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, category = Level, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, category = Level, meta = (AllowPrivateAccess = "true"))
 		bool bDaytime = true;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, category = Combat, meta = (AllowPrivateAccess = "true"))
+		bool bInCombat;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
+		int32 CurrentKills;
 
 protected:
 
 	UFUNCTION(BlueprintCallable)
 		void SetDayNight(bool bDay);
-
-	UFUNCTION(BlueprintNativeEvent)
-		void DayArrived();
-		void DayArrived_Implementation();
-
-	UFUNCTION(BlueprintNativeEvent)
-		void NightArrived();
-		void NightArrived_Implementation();
 
 public:
 	FORCEINLINE float GetLevelNoiseModifier() const { return LevelNoiseModifier; }
@@ -64,6 +69,15 @@ public:
 	FORCEINLINE void SetVignetteEnabled(bool bEnabled) { bVignetteEnabled = bEnabled; }
 	FORCEINLINE float GetDefaultVignette() const { return DefaultVignette; }
 
-	FORCEINLINE bool GetDaytime() const { return bDaytime; }
+	FORCEINLINE bool GetDaytime() { return bDaytime; }
 	FORCEINLINE void SetDaytime(bool bDayNight) { bDaytime = bDayNight; }
+
+	FORCEINLINE bool GetIsInCombat() const { return bInCombat; }
+	FORCEINLINE void SetIsInCombat(bool bCombatState) { bInCombat = bCombatState; }
+
+	FORCEINLINE int32 GetCurrentKills() const { return CurrentKills; }
+	FORCEINLINE void IncrementCurrentKills() { CurrentKills++; }
+
+	FORCEINLINE AAnnouncer* GetAnnouncer() const { return Announcer; }
+	FORCEINLINE void SetAnnouncer(AAnnouncer* AnnouncerInst) { Announcer = AnnouncerInst; }
 };

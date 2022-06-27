@@ -18,6 +18,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "MarkedExecutionDamageType.h"
+#include "ShooterGameState.h"
+#include "Announcer.h"
 
 // Sets default values
 AEnemy::AEnemy() :
@@ -181,6 +183,25 @@ void AEnemy::Die(bool bForce)
 	
 	bDying = true;
 
+	// Check Kill Streaks
+	// THIS IS DUMMY CODE: NEEDS TO GO INTO GAMESTATE AS AN EVENT
+	auto GameState = Cast<AShooterGameState>(GetWorld()->GetGameState());
+	if (GameState)
+	{
+		// Increment Kills
+		GameState->IncrementCurrentKills();
+
+		if (GameState->GetCurrentKills() == 1)
+		{
+			if (GameState->GetAnnouncer())
+			{
+				// Play First Blood
+				// 1s Delay in the CUE
+				GameState->GetAnnouncer()->PlayFirstBloodAnnouncement();
+			}
+		}
+	}
+
 	// Stops shots from hitting the corpse
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
 
@@ -191,7 +212,8 @@ void AEnemy::Die(bool bForce)
 	LeftWeaponCollision->OnComponentBeginOverlap.RemoveAll(this);
 	RightWeaponCollision->OnComponentBeginOverlap.RemoveAll(this);
 
-	HideHealthBar();
+	// TODO: IMPROVE THIS: SEE Take Damage
+	//HideHealthBar();
 	HideEmoteBubble();
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -761,7 +783,8 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 
 	if (bDying) return DamageAmount; // Early return if enemy is dying
 
-	ShowHealthBar();
+	// TODO: IMPROVE THIS: Only show if its a BOSS OR MINI-BOSS
+	//ShowHealthBar();
 
 	// Determine if bullet hit stuns the enemy
 

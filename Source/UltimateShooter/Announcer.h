@@ -34,6 +34,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, category = "Buffs", meta = (AllowPrivateAccess = "true"))
 		class USoundCue* SpeedBuffAnnounce;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
+		class USoundCue* FirstBloodAnnounce;
+
 public:
 
 	UFUNCTION(BlueprintCallable)
@@ -44,4 +47,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void PlaySpeedBuffAnnouncement();
+
+	UFUNCTION(BlueprintCallable)
+		void PlayFirstBloodAnnouncement();
 };

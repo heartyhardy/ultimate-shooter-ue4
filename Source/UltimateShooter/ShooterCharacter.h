@@ -159,6 +159,8 @@ protected:
 	/** FireWeapon functions */
 	void PlayFireSound();
 	void SendBullet();
+	bool GetGlobalCombatState();
+	void SetGlobalCombatState();
 	void PlayBulletTimeRefraction(FHitResult& BeamHitResult);
 	void PlayGunfireMontage();
 
@@ -307,6 +309,12 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 		void HideBulletTimeSpeedBoostFX();
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void ShowSpeedBonusTimedFX();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void HideSpeedBonusTimedFX();
+
 	void PlayCriticalHitEmote();
 
 	void InterpBulletTimeMoveSpeed(float DeltaTime);
@@ -317,6 +325,8 @@ protected:
 	void TriggerCameraRoll();
 
 	void ResetCameraRollCooldown();
+
+	void ResetCombatState();
 
 public:
 	// Called every frame
@@ -806,6 +816,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Executions", meta = (AllowPrivateAccess = "true"))
 		int32 RemainingChainedExecutions;
+
+	FTimerHandle CombatStateResetTimer;
 
 public:
 

@@ -894,8 +894,6 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, 
 	FVector StartToEnd{ BeamEndLocation - MuzzleSocketLocation };
 	FVector WeaponTraceEnd{ MuzzleSocketLocation + StartToEnd * 5.25f }; // Extend the 2nd Trace by 1.25 Times to hit obstacles properly
 
-	UE_LOG(LogTemp, Warning, TEXT("Muzzle: %s"), *WeaponTraceStart.ToString());
-
 	GetWorld()->LineTraceSingleByChannel(
 		OutHitResult,
 		WeaponTraceStart,
@@ -1627,10 +1625,6 @@ bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& 
 
 				float BarrelToHitDotProduct = FVector::DotProduct(NormalizedDirection, GetActorForwardVector());
 
-				UE_LOG(LogTemp, Warning, TEXT("Actor FORWARD: %s"), *GetActorForwardVector().ToString());
-				UE_LOG(LogTemp, Warning, TEXT("Actor to Enemy: %s"), *NormalizedDirection.ToString());
-				UE_LOG(LogTemp, Warning, TEXT("Dot Product: %f"), BarrelToHitDotProduct);
-
 				if (BarrelToHitDotProduct > 0.f) return false;
 			}
 			
@@ -2275,19 +2269,6 @@ void AShooterCharacter::InterpCapsuleHalfHeight(float DeltaTime)
 void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	auto* GameState = Cast<AShooterGameState>(GetWorld()->GetGameState());
-	if (GameState)
-	{
-		if (GameState->GetIsInCombat())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("IS IN COMBAT"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("NOT IN COMBAT"));
-		}
-	}
 
 
 	TriggerCameraRoll();

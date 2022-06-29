@@ -52,6 +52,18 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
 		int32 CurrentKills;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
+		int32 CurrentKillStreak;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
+		FDateTime CurrentKillTime;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
+		FDateTime LastKillTime;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
+		float KillStreakThreshold;
+
 protected:
 
 	UFUNCTION(BlueprintCallable)
@@ -80,4 +92,14 @@ public:
 
 	FORCEINLINE AAnnouncer* GetAnnouncer() const { return Announcer; }
 	FORCEINLINE void SetAnnouncer(AAnnouncer* AnnouncerInst) { Announcer = AnnouncerInst; }
+
+	FORCEINLINE FDateTime GetCurrentKillTime() const { return CurrentKillTime; }
+	FORCEINLINE void SetCurrentKillTime(FDateTime KillTime) { CurrentKillTime = KillTime; }
+	FORCEINLINE FDateTime GetLastKillTime() const { return LastKillTime; }
+	FORCEINLINE void SetLastKillTime(FDateTime KillTime) { LastKillTime = KillTime; }
+
+	FORCEINLINE int32 GetCurrentKillStreak() const { return CurrentKillStreak; }
+	FORCEINLINE void IncrementCurrentKillStreak() { CurrentKillStreak++; }
+
+	FORCEINLINE FTimespan GetKillTimeDifference() const { return (CurrentKillTime - LastKillTime); }
 };

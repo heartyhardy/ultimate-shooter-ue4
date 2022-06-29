@@ -20,6 +20,7 @@
 #include "MarkedExecutionDamageType.h"
 #include "ShooterGameState.h"
 #include "Announcer.h"
+#include "Misc/DateTime.h"
 
 // Sets default values
 AEnemy::AEnemy() :
@@ -190,6 +191,13 @@ void AEnemy::Die(bool bForce)
 	{
 		// Increment Kills
 		GameState->IncrementCurrentKills();
+
+		GameState->SetLastKillTime(GameState->GetCurrentKillTime());
+		GameState->SetCurrentKillTime(FDateTime::Now());
+
+		UE_LOG(LogTemp, Warning, TEXT("CURRENT KILL TIME: %s"), *GameState->GetCurrentKillTime().ToString());
+		UE_LOG(LogTemp, Warning, TEXT("LAST KILL TIME: %s"), *GameState->GetLastKillTime().ToString());
+		UE_LOG(LogTemp, Warning, TEXT("KILL TIME DIFF: %d"), GameState->GetKillTimeDifference().GetSeconds());
 
 		if (GameState->GetCurrentKills() == 1)
 		{

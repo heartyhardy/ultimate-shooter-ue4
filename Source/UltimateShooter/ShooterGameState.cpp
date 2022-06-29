@@ -4,8 +4,11 @@
 #include "ShooterGameState.h"
 
 AShooterGameState::AShooterGameState():
+	// Combat State
 	bInCombat(false),
-	CurrentKills(0)
+	// Kill Streaks
+	CurrentKills(0),
+	KillStreakThreshold(4.f)
 {
 }
 

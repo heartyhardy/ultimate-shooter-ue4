@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "KillStreakAnnoucementType.h"
 #include "Announcer.generated.h"
 
 UCLASS()
@@ -37,6 +38,22 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
 		class USoundCue* FirstBloodAnnounce;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
+		class USoundCue* DoubleKillAnnounce;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
+		class USoundCue* TripleKillAnnounce;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
+		class USoundCue* QuadraKillAnnounce;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
+		class USoundCue* PentaKillAnnounce;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, category = "Kill Streaks", meta = (AllowPrivateAccess = "true"))
+		class USoundCue* EpicKillingAnnounce;
+
+
 public:
 
 	UFUNCTION(BlueprintCallable)
@@ -50,4 +67,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void PlayFirstBloodAnnouncement();
+
+	UFUNCTION(BlueprintCallable)
+		void PlayKillStreakAnnouncement(EKillStreakAnnoucementType AnnouncemetType);
 };

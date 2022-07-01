@@ -100,6 +100,11 @@ public:
 
 	FORCEINLINE int32 GetCurrentKillStreak() const { return CurrentKillStreak; }
 	FORCEINLINE void IncrementCurrentKillStreak() { CurrentKillStreak++; }
+	FORCEINLINE void ResetCurrentKillStreak() { CurrentKillStreak = 0; }
 
 	FORCEINLINE FTimespan GetKillTimeDifference() const { return (CurrentKillTime - LastKillTime); }
+	FORCEINLINE float GetKillStreakThreshold() const { return KillStreakThreshold; }
+
+	void PlayKillStreakAnnouncement();
+
 };

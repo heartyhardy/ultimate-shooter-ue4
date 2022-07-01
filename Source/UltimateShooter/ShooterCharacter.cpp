@@ -633,7 +633,7 @@ void AShooterCharacter::ResetBulletTimeMoveSpeedBonus()
 	// TODO: Reset Move Speed
 	if (!bBulletTimeMoveSpeedResetInterping && CurrentBulletTimeMoveSpeedBonus > 0.f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("RESETTING MOVE SPEED..."));
+		//UE_LOG(LogTemp, Warning, TEXT("RESETTING MOVE SPEED..."));
 		TargetBulletTimeMoveSpeed = GetCharacterMovement()->MaxWalkSpeed - (CurrentBulletTimeMoveSpeedBonus - CurrentInterpedBulletTimeMoveSpeedBonus);
 		bBulletTimeMoveSpeedResetInterping = true;
 	}
@@ -678,7 +678,7 @@ void AShooterCharacter::InterpBulletTimeMoveSpeed(float DeltaTime)
 		);
 
 		CurrentInterpedBulletTimeMoveSpeedBonus = TargetBulletTimeMoveSpeed - NewSpeed;
-		UE_LOG(LogTemp, Warning, TEXT("MOVE SPEED BONUS: %f - %f - %f"), NewSpeed, TargetBulletTimeMoveSpeed, CurrentInterpedBulletTimeMoveSpeedBonus);
+		//UE_LOG(LogTemp, Warning, TEXT("MOVE SPEED BONUS: %f - %f - %f"), NewSpeed, TargetBulletTimeMoveSpeed, CurrentInterpedBulletTimeMoveSpeedBonus);
 
 		GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 

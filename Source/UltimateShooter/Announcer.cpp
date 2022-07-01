@@ -76,3 +76,62 @@ void AAnnouncer::PlayFirstBloodAnnouncement()
 	}
 }
 
+void AAnnouncer::PlayKillStreakAnnouncement(EKillStreakAnnoucementType AnnouncemetType)
+{
+	switch (AnnouncemetType)
+	{
+	case EKillStreakAnnoucementType::EKSAT_FirstKill:
+		break;
+
+	case EKillStreakAnnoucementType::EKSAT_DoubleKill:
+		if (DoubleKillAnnounce)
+		{
+			UGameplayStatics::PlaySound2D(
+				GetWorld(),
+				DoubleKillAnnounce
+			);
+		}
+		break;
+
+	case EKillStreakAnnoucementType::EKSAT_TripleKill:
+		if (TripleKillAnnounce)
+		{
+			UGameplayStatics::PlaySound2D(
+				GetWorld(),
+				TripleKillAnnounce
+			);
+		}
+		break;
+
+	case EKillStreakAnnoucementType::EKSAT_QuadraKill:
+		if (QuadraKillAnnounce)
+		{
+			UGameplayStatics::PlaySound2D(
+				GetWorld(),
+				QuadraKillAnnounce
+			);
+		}
+		break;
+
+	case EKillStreakAnnoucementType::EKSAT_PentaKill:
+		if (PentaKillAnnounce)
+		{
+			UGameplayStatics::PlaySound2D(
+				GetWorld(),
+				PentaKillAnnounce
+			);
+		}
+		break;
+
+	case EKillStreakAnnoucementType::EKAST_EpicKill:
+		if (EpicKillingAnnounce)
+		{
+			UGameplayStatics::PlaySound2D(
+				GetWorld(),
+				EpicKillingAnnounce
+			);
+		}
+		break;
+	}
+}
+

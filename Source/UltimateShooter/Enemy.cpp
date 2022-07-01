@@ -194,10 +194,18 @@ void AEnemy::Die(bool bForce)
 
 		GameState->SetLastKillTime(GameState->GetCurrentKillTime());
 		GameState->SetCurrentKillTime(FDateTime::Now());
+		float KillTimeDiff = GameState->GetKillTimeDifference().GetSeconds();
 
-		UE_LOG(LogTemp, Warning, TEXT("CURRENT KILL TIME: %s"), *GameState->GetCurrentKillTime().ToString());
-		UE_LOG(LogTemp, Warning, TEXT("LAST KILL TIME: %s"), *GameState->GetLastKillTime().ToString());
-		UE_LOG(LogTemp, Warning, TEXT("KILL TIME DIFF: %d"), GameState->GetKillTimeDifference().GetSeconds());
+		if (KillTimeDiff <= GameState->GetKillStreakThreshold())
+		{
+			GameState->IncrementCurrentKillStreak();
+		}
+		else
+		{
+			GameState->ResetCurrentKillStreak();
+			GameState->IncrementCurrentKillStreak();
+		}
+
 
 		if (GameState->GetCurrentKills() == 1)
 		{
@@ -205,8 +213,12 @@ void AEnemy::Die(bool bForce)
 			{
 				// Play First Blood
 				// 1s Delay in the CUE
-				GameState->GetAnnouncer()->PlayFirstBloodAnnouncement();
+				GameState->GetAnnouncer()->PlayKillStreakAnnouncement(EKillStreakAnnoucementType::EKSAT_FirstKill);
 			}
+		}
+		else if (GameState->GetCurrentKillStreak() >= 0)
+		{
+			GameState->PlayKillStreakAnnouncement();
 		}
 	}
 

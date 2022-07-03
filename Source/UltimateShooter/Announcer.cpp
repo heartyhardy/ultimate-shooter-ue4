@@ -81,6 +81,7 @@ void AAnnouncer::PlayKillStreakAnnouncement(EKillStreakAnnoucementType Announcem
 	switch (AnnouncemetType)
 	{
 	case EKillStreakAnnoucementType::EKSAT_FirstKill:
+		PlayFirstBloodAnnouncement();
 		break;
 
 	case EKillStreakAnnoucementType::EKSAT_DoubleKill:

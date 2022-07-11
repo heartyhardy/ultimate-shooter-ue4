@@ -781,6 +781,10 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 		}
 	}
 
+	// TODO:
+	// OH YEAH NOW YOU KNOW!
+	//CustomTimeDilation = 0.f;
+
 	UMarkedExecutionDamageType* MarkedExecutionDamage = Cast<UMarkedExecutionDamageType>(DamageEvent.DamageTypeClass.Get()->GetDefaultObject());
 	if (MarkedExecutionDamage)
 	{

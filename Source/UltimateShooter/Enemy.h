@@ -228,6 +228,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
 	FVector PatrolPoint2;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true"))
 	class AEnemyController* EnemyController;
 	
 	/** Overlap sphere for when the enemy becomes hostile towards player */

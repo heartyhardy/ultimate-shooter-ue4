@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Runtime/AIModule/Classes/DetourCrowdAIController.h"
+#include "DetourCrowdAIController.h"
 #include "EnemyController.generated.h"
 
 /**
@@ -16,8 +18,8 @@ class ULTIMATESHOOTER_API AEnemyController : public AAIController
 	
 public:
 
-	AEnemyController();
-	virtual void OnPossess(APawn* InPawn) override;
+	AEnemyController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	virtual void OnPossess(APawn* InPawn) override;	 
 
 private:
 

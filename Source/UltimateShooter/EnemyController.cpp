@@ -39,12 +39,13 @@ void AEnemyController::OnPossess(APawn* InPawn)
 		if (PathFollowComp)
 		{
 			PathFollowComp->SetCrowdAvoidanceQuality(ECrowdAvoidanceQuality::High);
-			//PathFollowComp->SetCrowdCollisionQueryRange(1000.f);
+			PathFollowComp->SetCrowdCollisionQueryRange(500.f);
 			PathFollowComp->SetCrowdSeparationWeight(500.f, true);
-			PathFollowComp->SetCrowdPathOptimizationRange(2000.f, true);
-			PathFollowComp->SetCrowdObstacleAvoidance(true, true);
-			PathFollowComp->SetCrowdPathOffset(true, true);
+			PathFollowComp->SetAcceptanceRadius(1000.f);
+			PathFollowComp->SetBlockDetection(300.f, 3.f, 12);
+			PathFollowComp->SetCrowdAnticipateTurns(true, true);
 			PathFollowComp->SetCrowdSeparation(true, true);
+			PathFollowComp->SetBlockDetectionState(true);
 			UE_LOG(LogTemp, Warning, TEXT("CROWD AI SET"));
 		}
 	}

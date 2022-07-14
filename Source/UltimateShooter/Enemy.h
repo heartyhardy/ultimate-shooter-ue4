@@ -230,6 +230,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true"))
 	class AEnemyController* EnemyController;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true"))
+	class APlacedInWorldEnemyController* EnemyWorldController;
 	
 	/** Overlap sphere for when the enemy becomes hostile towards player */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))

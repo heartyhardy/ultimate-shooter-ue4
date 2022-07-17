@@ -10,7 +10,7 @@
 #include "Enemy.h"
 
 
-AEnemyController::AEnemyController(const FObjectInitializer& ObjectInitializer) :
+AEnemyController::AEnemyController(const FObjectInitializer& ObjectInitializer):
 	Super(ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>(TEXT("PathFollowingComponent")))
 {
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
@@ -18,6 +18,7 @@ AEnemyController::AEnemyController(const FObjectInitializer& ObjectInitializer) 
 
 	BehaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
 	check(BehaviorTreeComponent);
+
 }
 
 void AEnemyController::OnPossess(APawn* InPawn)
@@ -35,19 +36,25 @@ void AEnemyController::OnPossess(APawn* InPawn)
 			BlackboardComponent->InitializeBlackboard(*(Enemy->GetBehaviorTree()->BlackboardAsset));
 		}
 
-		UCrowdFollowingComponent* PathFollowComp = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent());
-		if (PathFollowComp)
-		{
-			PathFollowComp->SetCrowdAvoidanceQuality(ECrowdAvoidanceQuality::High);
-			PathFollowComp->SetCrowdCollisionQueryRange(500.f);
-			PathFollowComp->SetCrowdSeparationWeight(500.f, true);
-			PathFollowComp->SetAcceptanceRadius(1000.f);
-			PathFollowComp->SetBlockDetection(300.f, 3.f, 12);
-			PathFollowComp->SetCrowdAnticipateTurns(true, true);
-			PathFollowComp->SetCrowdSeparation(true, true);
-			PathFollowComp->SetBlockDetectionState(true);
-			UE_LOG(LogTemp, Warning, TEXT("CROWD AI SET"));
-		}
+		SetCrowdAttributes();
 	}
 
+}
+
+void AEnemyController::SetCrowdAttributes()
+{
+	UCrowdFollowingComponent* PathFollowComp = Cast<UCrowdFollowingComponent>(GetPathFollowingComponent());
+	if (PathFollowComp)
+	{
+		PathFollowComp->SetCrowdAvoidanceQuality(ECrowdAvoidanceQuality::High);
+		PathFollowComp->SetCrowdCollisionQueryRange(500.f);
+		PathFollowComp->SetCrowdSeparationWeight(500.f, true);
+		PathFollowComp->SetAcceptanceRadius(1000.f);
+		PathFollowComp->SetBlockDetection(300.f, 3.f, 12);
+		PathFollowComp->SetCrowdAnticipateTurns(true, true);
+		PathFollowComp->SetCrowdSeparation(true, true);
+		PathFollowComp->SetBlockDetectionState(true);
+
+		UE_LOG(LogTemp, Warning, TEXT("AI Possed!"));
+	}
 }

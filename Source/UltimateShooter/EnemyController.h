@@ -21,6 +21,11 @@ public:
 	AEnemyController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void OnPossess(APawn* InPawn) override;	 
 
+protected:
+
+	UFUNCTION(BlueprintCallable)
+		void SetCrowdAttributes();
+
 private:
 
 	/** Blackboard for this enemy */

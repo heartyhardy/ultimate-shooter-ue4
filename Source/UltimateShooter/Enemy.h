@@ -162,6 +162,12 @@ protected:
 
 	void PlayMarkedExecutionDamageVFX();
 
+	UFUNCTION(BlueprintCallable)
+	void SetPatrolPointOne(FVector WorldPoint);
+
+	UFUNCTION(BlueprintCallable)
+	void SetPatrolPointTwo(FVector WorldPoint);
+
 private:
 
 	/** Particles to spawn when hit by player attacks */

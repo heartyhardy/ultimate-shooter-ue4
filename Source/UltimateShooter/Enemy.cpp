@@ -729,6 +729,46 @@ void AEnemy::PlayMarkedExecutionDamageVFX()
 	}
 }
 
+void AEnemy::SetPatrolPointOne(FVector WorldPoint)
+{
+	PatrolPoint = WorldPoint;
+
+	// Transform Local Vector: PatrolPoint to World Space Vector
+	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(
+		GetActorTransform(),
+		PatrolPoint
+	);
+
+	if (EnemyController)
+	{
+		// Set 1st Patrol point Vector value to blackboard
+		EnemyController->GetBlackboardComponent()->SetValueAsVector(
+			TEXT("PatrolPoint"),
+			WorldPatrolPoint
+		);
+	}
+}
+
+void AEnemy::SetPatrolPointTwo(FVector WorldPoint)
+{
+	PatrolPoint2 = WorldPoint;
+
+	// Transform Local Vector: PatrolPoint to World Space Vector
+	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(
+		GetActorTransform(),
+		PatrolPoint2
+	);
+
+	if (EnemyController)
+	{
+		// Set 1st Patrol point Vector value to blackboard
+		EnemyController->GetBlackboardComponent()->SetValueAsVector(
+			TEXT("PatrolPoint2"),
+			WorldPatrolPoint
+		);
+	}
+}
+
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {

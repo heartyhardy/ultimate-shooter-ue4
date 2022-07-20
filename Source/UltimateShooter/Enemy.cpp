@@ -733,18 +733,13 @@ void AEnemy::SetPatrolPointOne(FVector WorldPoint)
 {
 	PatrolPoint = WorldPoint;
 
-	// Transform Local Vector: PatrolPoint to World Space Vector
-	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(
-		GetActorTransform(),
-		PatrolPoint
-	);
-
 	if (EnemyController)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("PatrolPoint Set"));
 		// Set 1st Patrol point Vector value to blackboard
 		EnemyController->GetBlackboardComponent()->SetValueAsVector(
 			TEXT("PatrolPoint"),
-			WorldPatrolPoint
+			PatrolPoint
 		);
 	}
 }
@@ -753,18 +748,12 @@ void AEnemy::SetPatrolPointTwo(FVector WorldPoint)
 {
 	PatrolPoint2 = WorldPoint;
 
-	// Transform Local Vector: PatrolPoint to World Space Vector
-	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(
-		GetActorTransform(),
-		PatrolPoint2
-	);
-
 	if (EnemyController)
 	{
-		// Set 1st Patrol point Vector value to blackboard
+		// Set 2nd Patrol point Vector value to blackboard
 		EnemyController->GetBlackboardComponent()->SetValueAsVector(
 			TEXT("PatrolPoint2"),
-			WorldPatrolPoint
+			PatrolPoint2
 		);
 	}
 }
@@ -818,6 +807,8 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 		if (!Character)
 		{
 			EnemyController->GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), DamageCauser);
+			//TODO: THIS IS A TEMP SOLUTION
+			GetCharacterMovement()->RotationRate = FRotator(0.f, 120.f, 0.f);
 		}
 	}
 

@@ -338,6 +338,7 @@ void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 			{
 				// Set the value of the "Target" key
 				EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Character);
+				GetCharacterMovement()->RotationRate = FRotator(0.f, 120.f, 0.f);
 			}
 		}
 	}
@@ -398,6 +399,7 @@ void AEnemy::ScoutSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 					}
 					
 					Ally->EnemyController->GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), Character);
+					GetCharacterMovement()->RotationRate = FRotator(0.f, 120.f, 0.f);
 				}
 			}
 		}
